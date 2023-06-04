@@ -235,9 +235,7 @@ trait RunsQueries
 
     public function toDsl(GrammarPipeline|null $pipeline = null): Query
     {
-        $pipeline ??= $this->adapter->fullPipeline();
-
-        return $pipeline->pipe($this->structure);
+        return $this->adapter->fullQuery($this->structure);
     }
 
     public function first(): CypherMap
@@ -246,7 +244,7 @@ trait RunsQueries
 
         $structure->limit = 1;
 
-        $query = $this->adapter->readOnlyQuery($structure);
+        $query = $this->adapter->fullQuery($structure);
 
         return $this->run($query->toQuery(), $this->structure->parameters)->getAsCypherMap(0);
     }

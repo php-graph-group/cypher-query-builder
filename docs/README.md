@@ -12,10 +12,8 @@ This query finds all the colleagues of Alice and Bob:
 ```php
 use PhpGraphGroup\CypherQueryBuilder\QueryBuilder;
 
-$results = QueryBuilder::new()
-    ->matchingNode('Person', 'a')
-    ->matchingNode('Person', 'b')
-    ->matchingRelationship('a', 'IS_COLLEAGUE', 'b')
+$results = QueryBuilder::fromNode('a:Person')
+    ->matchingRelationship('a', 'IS_COLLEAGUE', 'b:Person')
     ->whereIn('a.name', ['Alice', 'Bob'])
     ->return('b.name AS name') // Notice of the present tense implies the query gets executed immediately.
 ```

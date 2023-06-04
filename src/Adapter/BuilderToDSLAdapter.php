@@ -59,9 +59,9 @@ final class BuilderToDSLAdapter
             ->pipe(clone $structure);
     }
 
-    public function fullPipeline(): GrammarPipeline
+    public function fullQuery(QueryStructure $structure): Query
     {
-        return GrammarPipeline::all();
+        return GrammarPipeline::all()->pipe(clone $structure);
     }
 
     public function merge(QueryStructure $structure): Query
