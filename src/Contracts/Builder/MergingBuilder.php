@@ -18,14 +18,14 @@ interface MergingBuilder
     /**
      * Matches a node.
      *
-     * @param list<string>|string $label
+     * @param non-empty-list<string>|string $label
      */
     public function mergingNode(string|array $label, string|null $name = null): static;
 
     /**
      * Connects two nodes with a relationship.
      *
-     * @param list<string>|string $types
+     * @param non-empty-list<string>|string $types
      */
     public function mergingConnection(string $from, string|array $types, string $end, string|null $name = null): static;
 

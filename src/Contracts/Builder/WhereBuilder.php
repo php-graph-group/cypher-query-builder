@@ -342,8 +342,12 @@ interface WhereBuilder
     public function xorWhereInner(callable $builder): static;
 
     public function andWhereInner(callable $builder): static;
+
     public function whereRaw(string $cypher, BooleanOperator $chainingOperator): static;
+
     public function andWhereRaw(string $cypher): static;
+
     public function orWhereRaw(string $cypher): static;
+
     public function xorWhereRaw(string $cypher): static;
 }

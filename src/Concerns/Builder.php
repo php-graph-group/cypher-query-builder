@@ -33,7 +33,6 @@ trait Builder
                 $name = 'n';
             }
         }
-
         if (is_string($label)) {
             $label = [$label];
         }

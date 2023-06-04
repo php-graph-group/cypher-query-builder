@@ -66,21 +66,14 @@ trait StringDecoder
 
     private function stringToLabel(string $label): LabelAssignment
     {
-        $variable = '';
-        if (str_contains($label, ':')) {
-            /** @psalm-suppress PossiblyUndefinedArrayOffset */
-            [ $variable, $label ] = explode(':', $label, 2);
-        }
-
-        if ($variable === '') {
-            $variable = $this->structure->entry;
-        } else {
-            $variable = new Variable($variable);
-        }
-
         $labels = explode(':', $label);
+        if (count($labels) === 1) {
+            $name = $this->structure->entry->name;
+        } else {
+            $name = array_shift($labels);
+        }
 
-        return new LabelAssignment($variable, $labels);
+        return new LabelAssignment(new Variable($name), $labels);
     }
 
     private function decodeToPropertyOrLabel(string $media): LabelAssignment|Property

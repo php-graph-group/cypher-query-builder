@@ -719,25 +719,25 @@ trait FiltersGraphTraversal
         return $this->whereInner($builder, BooleanOperator::XOR);
     }
 
-    public function whereRaw(string $expression, BooleanOperator $operator): static
+    public function whereRaw(string $cypher, BooleanOperator $chainingOperator): static
     {
-        $this->structure->wheres[] = new RawBoolean($expression, $operator);
+        $this->structure->wheres[] = new RawBoolean($cypher, $chainingOperator);
 
         return $this;
     }
 
-    public function orWhereRaw(string $expression): static
+    public function orWhereRaw(string $cypher): static
     {
-        return $this->whereRaw($expression, BooleanOperator::OR);
+        return $this->whereRaw($cypher, BooleanOperator::OR);
     }
 
-    public function andWhereRaw(string $expression): static
+    public function andWhereRaw(string $cypher): static
     {
-        return $this->whereRaw($expression, BooleanOperator::AND);
+        return $this->whereRaw($cypher, BooleanOperator::AND);
     }
 
-    public function xorWhereRaw(string $expression): static
+    public function xorWhereRaw(string $cypher): static
     {
-        return $this->whereRaw($expression, BooleanOperator::XOR);
+        return $this->whereRaw($cypher, BooleanOperator::XOR);
     }
 }

@@ -90,7 +90,7 @@ class GraphPattern
      */
     private function createNode(string|null $name, array $labels, string $mode, array $properties, bool $optional): PropertyNode
     {
-        $name ??= $this->nameFromLabel($labels[0] ?? null);
+        [$labels, $name] = $this->normaliseNameAndLabelOrType($labels, $name, 'node');
         if ($name !== null && ($node = $this->getByNameLoose($name, $i)) !== null && $i !== null) {
             $properties = [...$node->properties, ...$properties];
 
@@ -115,7 +115,7 @@ class GraphPattern
      */
     private function createRelationship(string|null $start, string|null $end, array $types, string|null $name, string $mode, array $properties, bool $optional): PropertyRelationship
     {
-        $name ??= $this->nameFromType($types[0] ?? null);
+        [$types, $name] = $this->normaliseNameAndLabelOrType($types, $name, 'relationship');
         if ($name !== null && ($relationship = $this->getByNameLoose($name, $i)) !== null && $i !== null) {
             $properties = [...$relationship->properties, ...$properties];
 
@@ -245,15 +245,49 @@ class GraphPattern
     }
 
     /**
-     * Generates a name from the provided label(s). The labels are assumed to be in PascalCase.
+     * @param list<array{value: PropertyNode|PropertyRelationship|RawExpression, mode: 'match'|'create'|'merge', optional: bool}> $param
+     *
+     * @return list<PropertyNode|PropertyRelationship|RawExpression>
      */
-    private function nameFromLabel(string|null $label): string|null
+    private function map(array $param): array
     {
-        if ($label === null) {
-            return null;
+        return array_map(static fn ($x) => $x['value'], $param);
+    }
+
+    /**
+     * @param list<string>          $typeOrLabels
+     * @param 'node'|'relationship' $target
+     *
+     * @return array{0: list<string>, 1: string|null}
+     */
+    private function normaliseNameAndLabelOrType(array $typeOrLabels, string|null $name, string $target): array
+    {
+        if (count($typeOrLabels) === 0) {
+            return [[], $name];
         }
 
-        return lcfirst($label);
+        $typeOrLabel = $typeOrLabels[0];
+        if ($typeOrLabel !== '') {
+            if ($name === null && str_contains($typeOrLabel, ':')) {
+                /** @psalm-suppress PossiblyUndefinedArrayOffset */
+                [$name, $typeOrLabel] = explode(':', $typeOrLabel, 2);
+
+                $name = $name === '' ? null : $name;
+                $typeOrLabel = $typeOrLabel === '' ? null : $typeOrLabel;
+            }
+        }
+
+        if ($name === null && $typeOrLabel !== null) {
+            $name = ($target === 'node') ? $this->nameFromLabel($typeOrLabel) : $this->nameFromType($typeOrLabel);
+        }
+
+        if ($typeOrLabel === null) {
+            array_splice($typeOrLabels, 0, 1);
+        } else {
+            $typeOrLabels[0] = $typeOrLabel;
+        }
+
+        return [$typeOrLabels, $name];
     }
 
     /**
@@ -274,12 +308,14 @@ class GraphPattern
     }
 
     /**
-     * @param list<array{value: PropertyNode|PropertyRelationship|RawExpression, mode: 'match'|'create'|'merge', optional: bool}> $param
-     *
-     * @return list<PropertyNode|PropertyRelationship|RawExpression>
+     * Generates a name from the provided label(s). The labels are assumed to be in PascalCase.
      */
-    private function map(array $param): array
+    private function nameFromLabel(string|null $label): string|null
     {
-        return array_map(static fn ($x) => $x['value'], $param);
+        if ($label === null) {
+            return null;
+        }
+
+        return lcfirst($label);
     }
 }

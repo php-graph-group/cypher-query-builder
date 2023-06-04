@@ -105,4 +105,18 @@ class BuilderTest extends TestCase
 
         $this->assertEqualCypher($expected, $cypher);
     }
+
+    public function testDynamicNameAndLabelNode(): void
+    {
+        $cypher = QueryBuilder::from('b:Bar')
+            ->returning('foo', 'boo')
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH (b:Bar)
+        RETURN b.foo AS foo, b.boo AS boo
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
 }
