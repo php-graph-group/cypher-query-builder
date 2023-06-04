@@ -188,11 +188,6 @@ class GraphPattern
         return null;
     }
 
-    public function getByName(string $name): PropertyNode|PropertyRelationship
-    {
-        return $this->getByNameLoose($name) ?? throw new RuntimeException(sprintf('No node or graph element with name "%s" found', $name));
-    }
-
     public function addMatchingRaw(string $cypher, bool $optional = false): void
     {
         $this->pattern[] = ['value' => new RawExpression($cypher), 'optional' => $optional, 'mode' => 'match'];
