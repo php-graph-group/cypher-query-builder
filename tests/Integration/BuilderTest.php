@@ -156,4 +156,21 @@ class BuilderTest extends TestCase
 
         $this->assertEqualCypher($expected, $cypher);
     }
+
+    public function testOptional(): void
+    {
+        $cypher = QueryBuilder::from('Foo')
+            ->matchingRelationship('foo', 'ZOO', ':Bar', optional: true)
+            ->returningAll()
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH (foo:Foo)
+        OPTIONAL MATCH (bar:Bar)
+        OPTIONAL MATCH (foo)-[zoo:ZOO]->(bar)
+        RETURN *
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
 }

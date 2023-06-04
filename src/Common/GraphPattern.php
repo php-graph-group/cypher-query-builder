@@ -118,14 +118,14 @@ class GraphPattern
         if ($start && str_contains($start, ':')) {
             [$startLabels, $start] = $this->normaliseNameAndLabelOrType([$start], null, 'node');
             if (count($startLabels) > 0) {
-                $this->createNode($start, $startLabels, $mode, [], false);
+                $this->createNode($start, $startLabels, $mode, [], $optional);
             }
         }
 
         if ($end && str_contains($end, ':')) {
             [$endLabels, $end] = $this->normaliseNameAndLabelOrType([$end], null, 'node');
             if (count($endLabels) > 0) {
-                $this->createNode($end, $endLabels, $mode, [], false);
+                $this->createNode($end, $endLabels, $mode, [], $optional);
             }
         }
 
