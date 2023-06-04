@@ -115,6 +115,20 @@ class GraphPattern
      */
     private function createRelationship(string|null $start, string|null $end, array $types, string|null $name, string $mode, array $properties, bool $optional): PropertyRelationship
     {
+        if ($start && str_contains($start, ':')) {
+            [$startLabels, $start] = $this->normaliseNameAndLabelOrType([$start], null, 'node');
+            if (count($startLabels) > 0) {
+                $this->createNode($start, $startLabels, $mode, [], false);
+            }
+        }
+
+        if ($end && str_contains($end, ':')) {
+            [$endLabels, $end] = $this->normaliseNameAndLabelOrType([$end], null, 'node');
+            if (count($endLabels) > 0) {
+                $this->createNode($end, $endLabels, $mode, [], false);
+            }
+        }
+
         [$types, $name] = $this->normaliseNameAndLabelOrType($types, $name, 'relationship');
         if ($name !== null && ($relationship = $this->getByNameLoose($name, $i)) !== null && $i !== null) {
             $properties = [...$relationship->properties, ...$properties];
@@ -273,7 +287,7 @@ class GraphPattern
                 [$name, $typeOrLabel] = explode(':', $typeOrLabel, 2);
 
                 $name = $name === '' ? null : $name;
-                $typeOrLabel = $typeOrLabel === '' ? null : $typeOrLabel;
+                $typeOrLabel = empty($typeOrLabel) ? null : $typeOrLabel;
             }
         }
 

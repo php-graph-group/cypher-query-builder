@@ -119,4 +119,41 @@ class BuilderTest extends TestCase
 
         $this->assertEqualCypher($expected, $cypher);
     }
+
+    public function testDynamicRelationshipNode(): void
+    {
+        $cypher = QueryBuilder::fromRelationship('b:FOO')
+            ->returning('bar AS zoo', 'boo')
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH ()-[b:FOO]->()
+        RETURN b.bar AS zoo, b.boo AS boo
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
+
+    public function testMerging(): void
+    {
+        $cypher = QueryBuilder::from('b:Foo')
+            ->matchingNode('c:Bar')
+            ->mergingConnection('b', 'FOO', 'c')
+            ->mergingConnection('c', 'BAR', 'd:D')
+            ->merging(['foo.bar' => 'awoo', 'x' => 'y'])
+            ->whereProperties('c.createdAt', '=', 'c.updatedAt')
+            ->onCreating(['foo.createdAt' => new DateTime(), 'createdAt' => new DateTime()])
+            ->onMatching(['updatedAt' => new DateTime()])
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH (c:Bar)
+        WHERE c.createdAt = c.updatedAt
+        MERGE (b:Foo {x: $param1}),(d:D),(c)-[bar:BAR]->(d),(b)-[foo:FOO {bar: $param0}]->(c)
+        ON MATCH SET b.updatedAt = $param4
+        ON CREATE SET foo.createdAt = $param2,b.createdAt = $param3
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
 }

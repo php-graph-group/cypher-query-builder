@@ -52,9 +52,9 @@ trait StringDecoder
         $property = $this->stringToProperty($property);
 
         if (preg_match('/^(?<property>[\w\W]+?) as (?<alias>[\w\W]+)$/i', $property->name, $matches)) {
-            $property = new Property($property->variable, $matches[0]['property']);
+            $property = new Property($property->variable, $matches['property']);
 
-            return new Alias($property, $matches[0]['alias']);
+            return new Alias($property, $matches['alias']);
         }
 
         if ($requiresAlias) {
