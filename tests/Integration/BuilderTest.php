@@ -173,4 +173,46 @@ class BuilderTest extends TestCase
 
         $this->assertEqualCypher($expected, $cypher);
     }
+
+    public function testFromRelationship(): void
+    {
+        $cypher = QueryBuilder::fromRelationship('RELATIONSHIP')
+            ->returningAll()
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH ()-[relationship:RELATIONSHIP]->()
+        RETURN *
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
+
+    public function testFromRelationshipEncoded(): void
+    {
+        $cypher = QueryBuilder::from('RELATIONSHIP>')
+            ->returningAll()
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH ()-[relationship:RELATIONSHIP]->()
+        RETURN *
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
+
+    public function testFromRelationshipEncodedReverse(): void
+    {
+        $cypher = QueryBuilder::from('<RELATIONSHIP')
+            ->returningAll()
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH ()<-[relationship:RELATIONSHIP]-()
+        RETURN *
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
 }
