@@ -41,10 +41,14 @@ trait Builder
     }
 
     /**
-     * @param list<string>|string|null $labelOrType
+     * @param PatternBuilder|list<string>|string|null $labelOrType
      */
-    public static function from(array|string|null $labelOrType = null, string|null $name = null, bool $optional = false): self
+    public static function from(PatternBuilder|array|string|null $labelOrType = null, string|null $name = null, bool $optional = false): self
     {
+        if ($labelOrType instanceof PatternBuilder) {
+            return self::fromPatternBuilder($labelOrType);
+        }
+
         $firstLabelOrType = (is_array($labelOrType) ? ($labelOrType[0] ?? null) : $labelOrType) ?? '';
         if (str_starts_with($firstLabelOrType, '<') || str_ends_with($firstLabelOrType, '>')) {
             return self::fromRelationship($labelOrType, $name, optional: $optional);
