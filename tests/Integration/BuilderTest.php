@@ -122,6 +122,21 @@ class BuilderTest extends TestCase
         $this->assertEqualCypher($expected, $cypher);
     }
 
+    public function testReturningProcedure(): void
+    {
+        $cypher = QueryBuilder::from('b:Bar')
+            ->returningProcedure('callingme', 'aggregate', 'bar', 'boo')
+            ->returningProcedure('callingOther', 'hello', 'zoo')
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH (b:Bar)
+        RETURN callingme(b.bar,b.boo) AS aggregate, callingOther(b.zoo) AS hello
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
+
     public function testDynamicRelationshipNode(): void
     {
         $cypher = QueryBuilder::fromRelationship('b:FOO')

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhpGraphGroup\CypherQueryBuilder\Contracts\Builder;
 
+use PhpGraphGroup\CypherQueryBuilder\Common\Distinct;
 use PhpGraphGroup\CypherQueryBuilder\Common\RawExpression;
 
 interface ReturningBuilder
@@ -21,6 +22,8 @@ interface ReturningBuilder
      * Returns the variables.
      */
     public function returning(string ...$properties): static;
+
+    public function returningProcedure(string $function, string|null $alias = 'aggregate', Distinct|RawExpression|string ...$properties): self;
 
     /**
      * Returns all variables by using a wildcard ('*').

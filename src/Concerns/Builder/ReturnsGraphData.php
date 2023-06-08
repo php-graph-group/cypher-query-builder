@@ -13,6 +13,9 @@ declare(strict_types=1);
 
 namespace PhpGraphGroup\CypherQueryBuilder\Concerns\Builder;
 
+use PhpGraphGroup\CypherQueryBuilder\Common\Alias;
+use PhpGraphGroup\CypherQueryBuilder\Common\Distinct;
+use PhpGraphGroup\CypherQueryBuilder\Common\FunctionCall;
 use PhpGraphGroup\CypherQueryBuilder\Common\RawExpression;
 use PhpGraphGroup\CypherQueryBuilder\Common\Variable;
 use PhpGraphGroup\CypherQueryBuilder\Concerns\HasQueryStructure;
@@ -32,6 +35,22 @@ trait ReturnsGraphData
         foreach ($properties as $property) {
             $this->structure->return[] = $this->stringToAliasableProperty($property);
         }
+
+        return $this;
+    }
+
+    public function returningProcedure(string $function, string|null $alias = 'aggregate', Distinct|RawExpression|string ...$properties): self
+    {
+        $arguments = [];
+        foreach ($properties as $property) {
+            if (is_string($property)) {
+                $property = $this->stringToProperty($property);
+            }
+
+            $arguments[] = $property;
+        }
+
+        $this->structure->return[] = new Alias(new FunctionCall($function, $arguments), $alias ?? 'aggregate');
 
         return $this;
     }
