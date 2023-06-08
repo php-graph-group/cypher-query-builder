@@ -15,7 +15,6 @@ namespace PhpGraphGroup\CypherQueryBuilder\Concerns\Builder;
 
 use PhpGraphGroup\CypherQueryBuilder\Common\MapValue;
 use PhpGraphGroup\CypherQueryBuilder\Common\Variable;
-use PhpGraphGroup\CypherQueryBuilder\Concerns\CoalescesTypesAndLabelLists;
 use PhpGraphGroup\CypherQueryBuilder\Concerns\HasQueryStructure;
 use PhpGraphGroup\CypherQueryBuilder\Concerns\StringDecoder;
 use PhpGraphGroup\CypherQueryBuilder\Contracts\Builder\CreatingBuilder;
@@ -28,14 +27,13 @@ trait CreatesGraphElements
 {
     use StringDecoder;
     use HasQueryStructure;
-    use CoalescesTypesAndLabelLists;
 
     /**
      * @param non-empty-list<string>|string $label
      */
     public function creatingNode(string|array $label, string|null $name = null): static
     {
-        $this->structure->graphPattern->addCreatingNode($this->coalesceStrict($label), $name, []);
+        $this->structure->graphPattern->addCreatingNode($label, $name, []);
 
         return $this;
     }
@@ -45,7 +43,7 @@ trait CreatesGraphElements
      */
     public function creatingConnection(string $from, string|array $types, string $end, string|null $name = null): static
     {
-        $this->structure->graphPattern->addCreatingRelationship($from, $end, $this->coalesceStrict($types), $name, []);
+        $this->structure->graphPattern->addCreatingRelationship($from, $end, $types, $name, [], null);
 
         return $this;
     }

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace PhpGraphGroup\CypherQueryBuilder\Concerns;
 
 use PhpGraphGroup\CypherQueryBuilder\Common\Alias;
+use PhpGraphGroup\CypherQueryBuilder\Common\Direction;
 use PhpGraphGroup\CypherQueryBuilder\Common\FunctionCall;
 use PhpGraphGroup\CypherQueryBuilder\Common\MapValue;
 use PhpGraphGroup\CypherQueryBuilder\Common\Parameter;
@@ -43,9 +44,7 @@ trait TranslatesObjectsToDsl
      */
     private function assignNameAndProperties(PropertyRelationship|PropertyNode $value, Relationship|Node $dsl): Relationship|Node
     {
-        if ($value->name) {
-            $dsl->withVariable($value->name->name);
-        }
+        $dsl->withVariable($value->name->name);
 
         if (count($value->properties)) {
             $properties = [];
@@ -134,20 +133,18 @@ trait TranslatesObjectsToDsl
 
     private function propertyRelationshipToDsl(PropertyRelationship $propertyRelationship): Path
     {
-        $relationship = Query::relationship(Relationship::DIR_RIGHT)
-            ->withTypes($propertyRelationship->types);
+        $relationship = Query::relationship(match ($propertyRelationship->direction) {
+            Direction::RIGHT_TO_LEFT => Relationship::DIR_LEFT,
+            Direction::LEFT_TO_RIGHT => Relationship::DIR_RIGHT,
+            Direction::ANY => Relationship::DIR_UNI,
+        })->withTypes($propertyRelationship->types);
 
         $relationship = $this->assignNameAndProperties($propertyRelationship, $relationship);
 
         $start = Query::node();
         $end = Query::node();
-        if ($propertyRelationship->start) {
-            $start = $start->withVariable($propertyRelationship->start->name);
-        }
-
-        if ($propertyRelationship->end) {
-            $end = $end->withVariable($propertyRelationship->end->name);
-        }
+        $start = $start->withVariable($propertyRelationship->left->name);
+        $end = $end->withVariable($propertyRelationship->right->name);
 
         return $start->relationship($relationship, $end);
     }

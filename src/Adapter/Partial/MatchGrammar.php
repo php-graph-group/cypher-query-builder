@@ -29,7 +29,8 @@ class MatchGrammar implements PartialGrammar
     public function compile(QueryStructure $structure): iterable
     {
         $matches = [];
-        foreach ($structure->graphPattern->chunk('matchStrict') as $match) {
+        $strictMatches = $structure->graphPattern->chunk('matchStrict');
+        foreach ($strictMatches as $match) {
             $matches[] = $this->chunkToDsl($match);
         }
 

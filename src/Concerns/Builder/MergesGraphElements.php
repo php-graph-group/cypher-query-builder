@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace PhpGraphGroup\CypherQueryBuilder\Concerns\Builder;
 
+use PhpGraphGroup\CypherQueryBuilder\Common\Direction;
 use PhpGraphGroup\CypherQueryBuilder\Concerns\HasQueryStructure;
 use PhpGraphGroup\CypherQueryBuilder\Concerns\StringDecoder;
 use PhpGraphGroup\CypherQueryBuilder\Contracts\Builder\MergingBuilder;
@@ -31,7 +32,7 @@ trait MergesGraphElements
      */
     public function mergingNode(string|array $label, string|null $name = null): static
     {
-        $this->structure->graphPattern->setMergingNode($this->coalesceStrict($label), $name, []);
+        $this->structure->graphPattern->addMergingNode($label, $name, []);
 
         return $this;
     }
@@ -41,7 +42,7 @@ trait MergesGraphElements
      */
     public function mergingConnection(string $from, string|array $types, string $end, string|null $name = null): static
     {
-        $this->structure->graphPattern->setMergingRelationship($from, $end, $this->coalesceStrict($types), $name, []);
+        $this->structure->graphPattern->addMergingRelationship($from, $end, $types, $name, [], Direction::LEFT_TO_RIGHT);
 
         return $this;
     }

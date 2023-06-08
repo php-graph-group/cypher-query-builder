@@ -22,8 +22,8 @@ class PropertyNode
      * @param list<PropertyAssignment> $properties
      */
     public function __construct(
-        public readonly Variable|null $name,
+        public readonly Variable $name,
         public readonly array $labels,
-        public readonly array $properties
+        public array $properties
     ) {}
 }

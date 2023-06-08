@@ -13,7 +13,7 @@ declare(strict_types=1);
 
 namespace PhpGraphGroup\CypherQueryBuilder\Concerns\Builder;
 
-use PhpGraphGroup\CypherQueryBuilder\Concerns\CoalescesTypesAndLabelLists;
+use PhpGraphGroup\CypherQueryBuilder\Common\Direction;
 use PhpGraphGroup\CypherQueryBuilder\Concerns\HasQueryStructure;
 use PhpGraphGroup\CypherQueryBuilder\Contracts\Builder\MatchingBuilder;
 
@@ -23,7 +23,6 @@ use PhpGraphGroup\CypherQueryBuilder\Contracts\Builder\MatchingBuilder;
 trait MatchesGraphs
 {
     use HasQueryStructure;
-    use CoalescesTypesAndLabelLists;
 
     /**
      * @param string|list<string>|null $label
@@ -32,7 +31,7 @@ trait MatchesGraphs
      */
     public function matchingNode(string|array|null $label = null, string|null $name = null, bool $optional = false): static
     {
-        $this->structure->graphPattern->addMatchingNode($this->coalesce($label), $name, $optional);
+        $this->structure->graphPattern->addMatchingNode($label, $name, $optional);
 
         return $this;
     }
@@ -49,15 +48,15 @@ trait MatchesGraphs
      *
      * @return $this
      */
-    public function matchingRelationship(string|null $from = null, string|array|null $type = null, string|null $end = null, string|null $name = null, bool $optional = false): static
-    {
-        if ($type === null) {
-            $type = [];
-        } elseif (is_string($type)) {
-            $type = [$type];
-        }
-
-        $this->structure->graphPattern->addMatchingRelationship($from, $end, $type, $name, $optional);
+    public function matchingRelationship(
+        string|null $from = null,
+        string|array|null $type = null,
+        string|null $end = null,
+        string|null $name = null,
+        Direction $direction = Direction::LEFT_TO_RIGHT,
+        bool $optional = false
+    ): static {
+        $this->structure->graphPattern->addMatchingRelationship($from, $end, $type, $name, $direction, $optional);
 
         return $this;
     }

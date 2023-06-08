@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace PhpGraphGroup\CypherQueryBuilder\Contracts\Builder;
 
+use PhpGraphGroup\CypherQueryBuilder\Common\Direction;
+
 interface MatchingBuilder
 {
     /**
@@ -34,5 +36,5 @@ interface MatchingBuilder
      *
      * @param string|list<string>|null $type
      */
-    public function matchingRelationship(string|null $from = null, string|array|null $type = null, string|null $end = null, string|null $name = null, bool $optional = false): static;
+    public function matchingRelationship(string|null $from = null, string|array|null $type = null, string|null $end = null, string|null $name = null, Direction $direction = Direction::LEFT_TO_RIGHT, bool $optional = false): static;
 }

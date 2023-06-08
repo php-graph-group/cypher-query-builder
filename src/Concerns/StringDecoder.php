@@ -28,7 +28,7 @@ trait StringDecoder
     private function stringToProperty(string $property): Property
     {
         if (str_contains($property, '.')) {
-            [ $variable, $property ] = explode('.', $property, 2);
+            [$variable, $property] = explode('.', $property, 2);
             $variable = new Variable($variable);
         } else {
             $variable = $this->structure->entry;

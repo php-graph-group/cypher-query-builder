@@ -14,6 +14,8 @@ declare(strict_types=1);
 namespace Integration;
 
 use DateTime;
+use PhpGraphGroup\CypherQueryBuilder\Builders\GraphPatternBuilder;
+use PhpGraphGroup\CypherQueryBuilder\Common\Direction;
 use PhpGraphGroup\CypherQueryBuilder\Contracts\Builder;
 use PhpGraphGroup\CypherQueryBuilder\QueryBuilder;
 use PHPUnit\Framework\TestCase;
@@ -127,7 +129,7 @@ class BuilderTest extends TestCase
             ->toCypher();
 
         $expected = <<<'CYPHER'
-        MATCH ()-[b:FOO]->()
+        MATCH (anon0)-[b:FOO]->(anon1)
         RETURN b.bar AS zoo, b.boo AS boo
         CYPHER;
 
@@ -149,7 +151,7 @@ class BuilderTest extends TestCase
         $expected = <<<'CYPHER'
         MATCH (c:Bar)
         WHERE c.createdAt = c.updatedAt
-        MERGE (b:Foo {x: $param1}),(d:D),(c)-[bar:BAR]->(d),(b)-[foo:FOO {bar: $param0}]->(c)
+        MERGE (b:Foo {x: $param1}),(d:D),(b)-[foo:FOO {bar: $param0}]->(c),(c)-[bar:BAR]->(d)
         ON MATCH SET b.updatedAt = $param4
         ON CREATE SET foo.createdAt = $param2,b.createdAt = $param3
         CYPHER;
@@ -181,7 +183,7 @@ class BuilderTest extends TestCase
             ->toCypher();
 
         $expected = <<<'CYPHER'
-        MATCH ()-[relationship:RELATIONSHIP]->()
+        MATCH (anon0)-[relationship:RELATIONSHIP]->(anon1)
         RETURN *
         CYPHER;
 
@@ -195,7 +197,7 @@ class BuilderTest extends TestCase
             ->toCypher();
 
         $expected = <<<'CYPHER'
-        MATCH ()-[relationship:RELATIONSHIP]->()
+        MATCH (anon0)-[relationship:RELATIONSHIP]->(anon1)
         RETURN *
         CYPHER;
 
@@ -209,7 +211,44 @@ class BuilderTest extends TestCase
             ->toCypher();
 
         $expected = <<<'CYPHER'
-        MATCH ()<-[relationship:RELATIONSHIP]-()
+        MATCH (anon0)<-[relationship:RELATIONSHIP]-(anon1)
+        RETURN *
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
+
+    /**
+     * @psalm-suppress PossiblyNullReference
+     */
+    public function testFromPatternBuilder(): void
+    {
+        $pattern = GraphPatternBuilder::from('Foo')
+            ->addChildNode('Bar')->end()
+            ->addRelationship('FOO_BAZ')
+                ->addChildNode('Baz')->end()
+                ->addChildNode('Baz', 'baz2')->end()
+                ->addChildNode('Reverse')
+                    ->addRelationship('REVERSING', direction: Direction::RIGHT_TO_LEFT)
+                        ->addChildNode('Reversed')->end()
+                    ->end()
+                ->end()
+                ->addChildNode()
+                    ->addRelationship('ANONYMOUS')
+                        ->addChildNode()->end()
+                    ->end()
+                ->end()
+            ->end()
+            ->addRelationship('OPTIONAL', optional: true)
+                ->addChildNode('OptionalNode')->end()
+            ->end();
+
+        $cypher = QueryBuilder::fromPatternBuilder($pattern)->returningAll()->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH (foo:Foo),(bar:Bar),(baz:Baz),(baz2:Baz),(reverse:Reverse),(reversed:Reversed),(anon0),(anon1),(reverse)<-[reversing:REVERSING]-(reversed),(anon0)-[anonymous:ANONYMOUS]->(anon1),(foo)-[fooBaz:FOO_BAZ]->(baz),(foo)-[fooBaz1:FOO_BAZ]->(baz2),(foo)-[fooBaz2:FOO_BAZ]->(reverse),(foo)-[fooBaz3:FOO_BAZ]->(anon0)
+        OPTIONAL MATCH (optionalNode:OptionalNode)
+        OPTIONAL MATCH (foo)-[optional:OPTIONAL]->(optionalNode)
         RETURN *
         CYPHER;
 

@@ -22,10 +22,11 @@ class PropertyRelationship
      * @param list<PropertyAssignment> $properties
      */
     public function __construct(
-        public readonly Variable|null $name,
-        public readonly Variable|null $start,
-        public readonly Variable|null $end,
+        public readonly Variable $name,
+        public readonly Variable $left,
+        public readonly Variable $right,
         public readonly array $types,
-        public readonly array $properties
+        public array $properties,
+        public readonly Direction $direction,
     ) {}
 }

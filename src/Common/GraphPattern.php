@@ -16,37 +16,50 @@ namespace PhpGraphGroup\CypherQueryBuilder\Common;
 use PhpGraphGroup\CypherQueryBuilder\Set\PropertyAssignment;
 use RuntimeException;
 
+/**
+ * @internal
+ */
 class GraphPattern
 {
     /**
-     * @var list<array{value: PropertyNode|PropertyRelationship|RawExpression, optional: bool, mode: 'match'|'merge'|'create'}>
+     * @var list<array{value: PropertyNode|PropertyRelationship|RawExpression, mode: 'match'|'optional-match'|'merge'|'create'}>
      */
     private array $pattern = [];
 
+    private int $anonymousCounter = 0;
+
     /**
-     * @param list<string> $labels
+     * @param list<string>|string|null $labels
      */
-    public function addMatchingNode(array $labels, string|null $name, bool $optional): PropertyNode
+    public function addMatchingNode(array|string|null $labels, string|null $name, bool $optional): PropertyNode
     {
-        return $this->createNode($name, $labels, 'match', [], $optional);
+        return $this->createNode($name, $labels, $optional ? 'optional-match' : 'match');
     }
 
     /**
-     * @param non-empty-list<string>   $labels
-     * @param list<PropertyAssignment> $properties
+     * @param non-empty-list<string>|string $labels
+     * @param list<PropertyAssignment>      $properties
      */
-    public function addCreatingNode(array $labels, string|null $name, array $properties): PropertyNode
+    public function addCreatingNode(array|string $labels, string|null $name, array $properties): PropertyNode
     {
-        return $this->createNode($name, $labels, 'create', $properties, false);
+        $node = $this->createNode($name, $this->coalesceStrict($labels), 'create');
+
+        $node->properties = $properties;
+
+        return $node;
     }
 
     /**
-     * @param non-empty-list<string>   $labels
-     * @param list<PropertyAssignment> $properties
+     * @param non-empty-list<string>|string $labels
+     * @param list<PropertyAssignment>      $properties
      */
-    public function setMergingNode(array $labels, string|null $name, array $properties): PropertyNode
+    public function addMergingNode(array|string $labels, string|null $name, array $properties): PropertyNode
     {
-        return $this->createNode($name, $labels, 'merge', $properties, false);
+        $node = $this->createNode($name, $this->coalesceStrict($labels), 'merge');
+
+        $node->properties = $properties;
+
+        return $node;
     }
 
     /**
@@ -57,7 +70,7 @@ class GraphPattern
     {
         foreach ($this->pattern as &$element) {
             $value = $element['value'];
-            if ($value instanceof PropertyNode && $value->name?->name === $variable) {
+            if ($value instanceof PropertyNode && $value->name->name === $variable) {
                 $element['value'] = new PropertyNode(
                     $value->name,
                     $value->labels,
@@ -68,13 +81,14 @@ class GraphPattern
                 return;
             }
 
-            if ($value instanceof PropertyRelationship && $value->name?->name === $variable) {
+            if ($value instanceof PropertyRelationship && $value->name->name === $variable) {
                 $element['value'] = new PropertyRelationship(
                     $value->name,
-                    $value->start,
-                    $value->end,
+                    $value->left,
+                    $value->right,
                     $value->types,
-                    [...$value->properties, ...$properties]
+                    [...$value->properties, ...$properties],
+                    $value->direction,
                 );
                 $element['mode'] = $mode;
 
@@ -84,103 +98,95 @@ class GraphPattern
     }
 
     /**
-     * @param list<string>             $labels
-     * @param 'match'|'merge'|'create' $mode
-     * @param list<PropertyAssignment> $properties
+     * @param list<string>|string|null                  $labels
+     * @param 'match'|'optional-match'|'merge'|'create' $mode
      */
-    private function createNode(string|null $name, array $labels, string $mode, array $properties, bool $optional): PropertyNode
+    private function createNode(string|null $name, array|string|null $labels, string $mode): PropertyNode
     {
         [$labels, $name] = $this->normaliseNameAndLabelOrType($labels, $name, 'node');
-        if ($name !== null && ($node = $this->getByNameLoose($name, $i)) !== null && $i !== null) {
-            $properties = [...$node->properties, ...$properties];
-
-            array_splice($this->pattern, $i, 1);
+        $node = $this->getByNameLoose($name) ?? new PropertyNode(new Variable($name), $labels, []);
+        if ($node instanceof PropertyRelationship) {
+            throw new RuntimeException('Cannot use a relationship as a node');
         }
 
-        $node = new PropertyNode(
-            $name === null ? null : new Variable($name),
-            $labels,
-            $properties
-        );
-
-        $this->pattern[] = ['value' => $node, 'optional' => $optional, 'mode' => $mode];
+        $this->pattern[] = ['value' => $node, 'mode' => $mode];
 
         return $node;
     }
 
     /**
-     * @param list<string>             $types
-     * @param 'match'|'merge'|'create' $mode
-     * @param list<PropertyAssignment> $properties
+     * @param list<string>|string|null                  $types
+     * @param 'match'|'merge'|'create'|'optional-match' $mode
      */
-    private function createRelationship(string|null $start, string|null $end, array $types, string|null $name, string $mode, array $properties, bool $optional): PropertyRelationship
+    private function createRelationship(string|null $left, string|null $right, array|string|null $types, string|null $name, string $mode, Direction|null $direction): PropertyRelationship
     {
-        if ($start && str_contains($start, ':')) {
-            [$startLabels, $start] = $this->normaliseNameAndLabelOrType([$start], null, 'node');
-            if (count($startLabels) > 0) {
-                $this->createNode($start, $startLabels, $mode, [], $optional);
-            }
+        [$leftLabels, $left] = $this->normaliseNameAndLabelOrType(null, $left, 'node');
+        if (count($leftLabels) > 0) {
+            $this->createNode($left, $leftLabels, $mode);
         }
 
-        if ($end && str_contains($end, ':')) {
-            [$endLabels, $end] = $this->normaliseNameAndLabelOrType([$end], null, 'node');
-            if (count($endLabels) > 0) {
-                $this->createNode($end, $endLabels, $mode, [], $optional);
-            }
+        [$rightLabels, $right] = $this->normaliseNameAndLabelOrType(null, $right, 'node');
+        if (count($rightLabels) > 0) {
+            $this->createNode($right, $rightLabels, $mode);
         }
 
-        [$types, $name] = $this->normaliseNameAndLabelOrType($types, $name, 'relationship');
-        if ($name !== null && ($relationship = $this->getByNameLoose($name, $i)) !== null && $i !== null) {
-            $properties = [...$relationship->properties, ...$properties];
+        [$types, $name] = $this->normaliseNameAndLabelOrType($types, $name, 'relationship', $direction);
 
-            array_splice($this->pattern, $i, 1);
-        }
-
-        $relationship = new PropertyRelationship(
-            $name === null ? null : new Variable($name),
-            $start === null ? null : new Variable($start),
-            $end === null ? null : new Variable($end),
+        $relationship = $this->getByNameLoose($name) ?? new PropertyRelationship(
+            new Variable($name),
+            new Variable($left),
+            new Variable($right),
             $types,
-            $properties
+            [],
+            $direction ?? Direction::LEFT_TO_RIGHT
         );
+        if ($relationship instanceof PropertyNode) {
+            throw new RuntimeException('Cannot use a relationship as a node');
+        }
 
-        $this->pattern[] = ['value' => $relationship, 'optional' => $optional, 'mode' => $mode];
+        $this->pattern[] = ['value' => $relationship, 'mode' => $mode];
 
         return $relationship;
     }
 
     /**
-     * @param list<string> $types
+     * @param list<string>|string|null $types
      */
-    public function addMatchingRelationship(string|null $start, string|null $end, array $types, string $name = null, bool $optional = false): PropertyRelationship
+    public function addMatchingRelationship(string|null $left, string|null $right, array|string|null $types, string|null $name, Direction|null $direction, bool $optional): PropertyRelationship
     {
-        return $this->createRelationship($start, $end, $types, $name, 'match', [], $optional);
+        return $this->createRelationship($left, $right, $types, $name, $optional ? 'optional-match' : 'match', $direction);
     }
 
     /**
-     * @param non-empty-list<string>   $types
-     * @param list<PropertyAssignment> $properties
+     * @param non-empty-list<string>|string|null $types
+     * @param list<PropertyAssignment>           $properties
      */
-    public function addCreatingRelationship(string $start, string $end, array $types, string|null $name, array $properties): PropertyRelationship
+    public function addCreatingRelationship(string $left, string $right, array|string|null $types, string|null $name, array $properties, Direction|null $direction): PropertyRelationship
     {
-        return $this->createRelationship($start, $end, $types, $name, 'create', $properties, false);
+        $relationship = $this->createRelationship($left, $right, $this->coalesceStrict($types), $name, 'create', $direction);
+
+        $relationship->properties = $properties;
+
+        return $relationship;
     }
 
     /**
-     * @param non-empty-list<string>   $types
-     * @param list<PropertyAssignment> $properties
+     * @param non-empty-list<string>|string|null $types
+     * @param list<PropertyAssignment>           $properties
      */
-    public function setMergingRelationship(string $start, string $end, array $types, string|null $name, array $properties): PropertyRelationship
+    public function addMergingRelationship(string $start, string $end, array|string|null $types, string|null $name, array $properties, Direction|null $direction): PropertyRelationship
     {
-        return $this->createRelationship($start, $end, $types, $name, 'merge', $properties, false);
+        $relationship = $this->createRelationship($start, $end, $this->coalesceStrict($types), $name, 'merge', $direction);
+
+        $relationship->properties = $properties;
+
+        return $relationship;
     }
 
-    public function getByNameLoose(string $name, int &$index = null): PropertyNode|PropertyRelationship|null
+    public function getByNameLoose(string $name): PropertyNode|PropertyRelationship|null
     {
-        foreach ($this->pattern as $i => $part) {
-            if (!$part['value'] instanceof RawExpression && $part['value']->name?->name === $name) {
-                $index = $i;
-
+        foreach ($this->pattern as $part) {
+            if (!$part['value'] instanceof RawExpression && $part['value']->name->name === $name) {
                 return $part['value'];
             }
         }
@@ -190,7 +196,7 @@ class GraphPattern
 
     public function addMatchingRaw(string $cypher, bool $optional = false): void
     {
-        $this->pattern[] = ['value' => new RawExpression($cypher), 'optional' => $optional, 'mode' => 'match'];
+        $this->pattern[] = ['value' => new RawExpression($cypher), 'mode' => 'match'];
     }
 
     /**
@@ -200,17 +206,33 @@ class GraphPattern
      */
     public function chunk(string $mode): array
     {
-        $matches = array_values(array_filter($this->pattern, static fn ($x) => $x['mode'] === 'match'));
+        $matches = array_values(array_filter(
+            $this->pattern,
+            static fn ($x) => $x['mode'] === 'match' || $x['mode'] === 'optional-match'
+        ));
 
         return $this->order(
-            $this->map(match ($mode) {
+            $this->mapValue(match ($mode) {
                 'match' => $matches,
-                'matchOptional' => array_values(array_filter($matches, fn ($x) => $x['optional'])),
-                'matchStrict' => array_values(array_filter($matches, fn ($x) => !$x['optional'])),
+                'matchOptional' => array_values(array_filter($matches, fn ($x) => $x['mode'] === 'optional-match')),
+                'matchStrict' => array_values(array_filter($matches, fn ($x) => $x['mode'] === 'match')),
                 'merge' => array_values(array_filter($this->pattern, static fn ($x) => $x['mode'] === 'merge')),
                 'create' => array_values(array_filter($this->pattern, static fn ($x) => $x['mode'] === 'create')),
             })
         );
+    }
+
+    private function setOrder(RawExpression|PropertyNode|PropertyRelationship $x): int
+    {
+        if ($x instanceof RawExpression) {
+            return 0;
+        }
+
+        if ($x instanceof PropertyNode) {
+            return 1;
+        }
+
+        return 2;
     }
 
     /**
@@ -220,94 +242,76 @@ class GraphPattern
      */
     private function order(array $elements): array
     {
-        usort($elements, static function ($a, $b) {
-            // raw expressions always come first
-            if ($a instanceof RawExpression) {
-                return -1;
-            }
-
-            // property relationships always come last
-            if ($a instanceof PropertyRelationship) {
-                return 1;
-            }
-
-            // property nodes come after raw expressions
-            if ($b instanceof RawExpression) {
-                return 1;
-            }
-
-            // but before property relationships
-            return 0;
-        });
+        usort($elements, fn ($a, $b) => $this->setOrder($a) <=> $this->setOrder($b));
 
         return $elements;
     }
 
     public function addCreatingRaw(string $cypher): void
     {
-        $this->pattern[] = ['value' => new RawExpression($cypher), 'optional' => false, 'mode' => 'create'];
+        $this->pattern[] = ['value' => new RawExpression($cypher), 'mode' => 'create'];
     }
 
     public function addMergingRaw(string $cypher): void
     {
-        $this->pattern[] = ['value' => new RawExpression($cypher), 'optional' => false, 'mode' => 'merge'];
+        $this->pattern[] = ['value' => new RawExpression($cypher), 'mode' => 'merge'];
     }
 
     /**
-     * @param list<array{value: PropertyNode|PropertyRelationship|RawExpression, mode: 'match'|'create'|'merge', optional: bool}> $param
+     * @param list<array{value: PropertyNode|PropertyRelationship|RawExpression, mode: 'match'|'create'|'merge'|'optional-match'}> $param
      *
      * @return list<PropertyNode|PropertyRelationship|RawExpression>
      */
-    private function map(array $param): array
+    private function mapValue(array $param): array
     {
         return array_map(static fn ($x) => $x['value'], $param);
     }
 
     /**
-     * @param list<string>          $typeOrLabels
-     * @param 'node'|'relationship' $target
+     * @param list<string>|string|null $typeOrLabels
+     * @param 'node'|'relationship'    $target
      *
-     * @return array{0: list<string>, 1: string|null}
+     * @return array{0: list<string>, 1: string}
      */
-    private function normaliseNameAndLabelOrType(array $typeOrLabels, string|null $name, string $target): array
+    private function normaliseNameAndLabelOrType(array|string|null $typeOrLabels, string|null $name, string $target, Direction &$direction = null): array
     {
-        if (count($typeOrLabels) === 0) {
-            return [[], $name];
-        }
+        $decoded = $this->decode($typeOrLabels, $target, $direction, $name);
 
-        $typeOrLabel = $typeOrLabels[0];
-        if ($typeOrLabel !== '') {
-            if ($name === null && str_contains($typeOrLabel, ':')) {
-                /** @psalm-suppress PossiblyUndefinedArrayOffset */
-                [$name, $typeOrLabel] = explode(':', $typeOrLabel, 2);
-
-                $name = $name === '' ? null : $name;
-                $typeOrLabel = empty($typeOrLabel) ? null : $typeOrLabel;
+        $first = null;
+        $typeOrLabels = [];
+        foreach ($decoded[0] as $x) {
+            $x = trim($x);
+            if ($x !== '') {
+                $first ??= $x;
+                $typeOrLabels[] = $x;
             }
         }
 
-        if ($name === null && $typeOrLabel !== null) {
-            $name = ($target === 'node') ? $this->nameFromLabel($typeOrLabel) : $this->nameFromType($typeOrLabel);
-        }
-
-        if ($typeOrLabel === null) {
-            array_splice($typeOrLabels, 0, 1);
-        } else {
-            $typeOrLabels[0] = $typeOrLabel;
+        $name = trim($decoded[1]);
+        if ($name === '') {
+            if ($first) {
+                $name = $target === 'node' ? $this->nameFromLabel($first) : $this->nameFromType($first);
+            } else {
+                $name = $this->anonymousName();
+            }
         }
 
         return [$typeOrLabels, $name];
     }
 
     /**
+     * Generates a name from the provided label(s). The labels are assumed to be in PascalCase.
+     */
+    private function nameFromLabel(string $label): string
+    {
+        return lcfirst($label);
+    }
+
+    /**
      * Generates a name based on the provided type(s). The types are assumed to be in SCREAMING_CASE.
      */
-    private function nameFromType(string|null $type): string|null
+    private function nameFromType(string $type): string
     {
-        if ($type === null) {
-            return null;
-        }
-
         $typenameParts = explode('_', $type);
         $lowercaseParts = array_map(strtolower(...), $typenameParts);
         $pascalCasedParts = array_map(ucfirst(...), $lowercaseParts);
@@ -317,14 +321,104 @@ class GraphPattern
     }
 
     /**
-     * Generates a name from the provided label(s). The labels are assumed to be in PascalCase.
+     * @param string|list<string>|null $labelOrType
+     *
+     * @return list<string>
      */
-    private function nameFromLabel(string|null $label): string|null
+    private function coalesce(string|array|null $labelOrType): array
     {
-        if ($label === null) {
-            return null;
+        if ($labelOrType === null) {
+            return [];
         }
 
-        return lcfirst($label);
+        if (is_string($labelOrType)) {
+            return [$labelOrType];
+        }
+
+        return $labelOrType;
+    }
+
+    /**
+     * @param string|list<string>|null $labelOrType
+     *
+     * @return non-empty-list<string>
+     */
+    private function coalesceStrict(string|array|null $labelOrType): array
+    {
+        $tbr = $this->coalesce($labelOrType);
+
+        if (count($tbr) === 0) {
+            throw new RuntimeException('Received empty label or type list');
+        }
+
+        return $tbr;
+    }
+
+    private function anonymousName(): string
+    {
+        $tbr = 'anon'.$this->anonymousCounter;
+        ++$this->anonymousCounter;
+
+        return $tbr;
+    }
+
+    /**
+     * @param list<string> $types
+     */
+    public function extractDirection(?Direction &$direction, array &$types): void
+    {
+        if ($direction === null && count($types) > 0) {
+            if (str_contains($types[0], '<')) {
+                $types[0] = str_replace('<', '', $types[0]);
+                $direction = Direction::RIGHT_TO_LEFT;
+            }
+            if (str_contains($types[0], '>')) {
+                $types[0] = str_replace('>', '', $types[0]);
+                $direction = $direction === Direction::RIGHT_TO_LEFT ? Direction::ANY : Direction::LEFT_TO_RIGHT;
+            }
+        }
+    }
+
+    /**
+     * @param list<string>|string|null $typeOrLabels
+     *
+     * @return array{0: list<string>, 1: string}
+     */
+    public function decode(array|string|null $typeOrLabels, string $target, ?Direction &$direction, ?string $name): array
+    {
+        $typeOrLabels = $this->coalesce($typeOrLabels);
+        if ($target === 'relationship') {
+            $this->extractDirection($direction, $typeOrLabels);
+        }
+
+        // If there are no types or labels we will see if the name contains a label definition
+        // This definition is denoted by the use of a colon eg: myNodeNode:MyLabel
+        if (count($typeOrLabels) === 0) {
+            if (str_contains($name ?? '', ':')) {
+                /** @psalm-suppress PossiblyUndefinedArrayOffset */
+                [$name, $typeOrLabel] = explode(':', $name ?? '', 2);
+                $typeOrLabels[] = $typeOrLabel;
+            }
+
+            return [$typeOrLabels, $name ?? $this->anonymousName()];
+        }
+
+        // Having a name and labels defined separately makes it so no string codec will be required
+        if ($name !== null) {
+            return [$typeOrLabels, $name];
+        }
+
+        // In all other cases we now there is no name defined and at least one label.
+        // We will use the first label to detect any encoding to extract the name from it.
+        // If there is no encoding we wil use the label to generate a type or name.
+        if (str_contains($typeOrLabels[0], ':')) {
+            /** @psalm-suppress PossiblyUndefinedArrayOffset */
+            [$name, $typeOrLabel] = explode(':', $typeOrLabels[0], 2);
+            $typeOrLabels[0] = $typeOrLabel;
+        } else {
+            $name = ($target === 'node') ? $this->nameFromLabel($typeOrLabels[0]) : $this->nameFromType($typeOrLabels[0]);
+        }
+
+        return [$typeOrLabels, $name];
     }
 }

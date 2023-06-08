@@ -13,59 +13,53 @@ declare(strict_types=1);
 
 namespace PhpGraphGroup\CypherQueryBuilder\Concerns;
 
+use InvalidArgumentException;
 use PhpGraphGroup\CypherQueryBuilder\Adapter\BuilderToDSLAdapter;
+use PhpGraphGroup\CypherQueryBuilder\Common\Direction;
 use PhpGraphGroup\CypherQueryBuilder\Common\GraphPattern;
 use PhpGraphGroup\CypherQueryBuilder\Common\ParameterStack;
+use PhpGraphGroup\CypherQueryBuilder\Contracts\PatternBuilder;
 use PhpGraphGroup\CypherQueryBuilder\QueryStructure;
 
 trait Builder
 {
-    /**
-     * @param list<string>|string|null $label
-     */
-    public static function from(array|string|null $label = null, string|null $name = null): self
+    public static function fromPatternBuilder(PatternBuilder $builder): self
     {
-        $matches = new GraphPattern();
+        $pattern = $builder->getPattern();
+        /** @psalm-suppress UndefinedPropertyFetch */
+        $start = $pattern->chunk('match')[0]->name;
 
-        if ($label === null) {
-            $label = [];
-            if ($name === null) {
-                $name = 'n';
-            }
-        }
-        if (is_string($label)) {
-            $label = [$label];
+        if ($start === null) {
+            throw new InvalidArgumentException('Name is required when using a GraphPatternBuilder');
         }
 
-        $node = $matches->addMatchingNode($label, $name, false);
-
-        /** @psalm-suppress PossiblyNullArgument */
         return new self(new QueryStructure(
             new ParameterStack(),
-            $matches,
-            $node->name,
-        ),
-            new BuilderToDSLAdapter());
+            $pattern,
+            $start,
+        ), new BuilderToDSLAdapter());
+    }
+
+    /**
+     * @param list<string>|string|null $labelOrType
+     */
+    public static function from(array|string|null $labelOrType = null, string|null $name = null, bool $optional = false): self
+    {
+        $firstLabelOrType = (is_array($labelOrType) ? ($labelOrType[0] ?? null) : $labelOrType) ?? '';
+        if (str_starts_with($firstLabelOrType, '<') || str_ends_with($firstLabelOrType, '>')) {
+            return self::fromRelationship($labelOrType, $name, optional: $optional);
+        }
+
+        return self::fromNode($labelOrType, $name, optional: $optional);
     }
 
     /**
      * @param list<string>|string|null $type
      */
-    public static function fromRelationship(array|string|null $type = null, string|null $name = null): self
+    public static function fromRelationship(array|string|null $type = null, string|null $name = null, Direction|null $direction = null, bool $optional = false): self
     {
         $matches = new GraphPattern();
-
-        if ($type === null) {
-            $type = [];
-            if ($name === null) {
-                $name = 'r';
-            }
-        }
-        if (is_string($type)) {
-            $type = [$type];
-        }
-
-        $relationship = $matches->addMatchingRelationship(null, null, $type, $name);
+        $relationship = $matches->addMatchingRelationship(null, null, $type, $name, $direction, $optional);
 
         /** @psalm-suppress PossiblyNullArgument */
         return new self(new QueryStructure(
@@ -79,8 +73,17 @@ trait Builder
     /**
      * @param list<string>|string|null $label
      */
-    public static function fromNode(array|string $label = null, string|null $name = null): self
+    public static function fromNode(array|string $label = null, string|null $name = null, bool $optional = false): self
     {
-        return self::from($label, $name);
+        $matches = new GraphPattern();
+        $relationship = $matches->addMatchingNode($label, $name, $optional);
+
+        /** @psalm-suppress PossiblyNullArgument */
+        return new self(new QueryStructure(
+            new ParameterStack(),
+            $matches,
+            $relationship->name,
+        ),
+            new BuilderToDSLAdapter());
     }
 }
