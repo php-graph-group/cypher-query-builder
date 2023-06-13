@@ -14,12 +14,16 @@ declare(strict_types=1);
 namespace PhpGraphGroup\CypherQueryBuilder\Where\Expressions;
 
 use PhpGraphGroup\CypherQueryBuilder\Common\Property;
+use PhpGraphGroup\CypherQueryBuilder\Contracts\Builder\WhereBuilder;
 use PhpGraphGroup\CypherQueryBuilder\Where\BooleanOperator;
 
+/**
+ * @psalm-import-type Operator from WhereBuilder
+ */
 class BinaryBooleanPropertyOperator
 {
     /**
-     * @param '<'|'<='|'='|'>'|'>='|'=~'|'!='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN' $operator
+     * @param Operator $operator
      */
     public function __construct(
         public readonly Property $left,

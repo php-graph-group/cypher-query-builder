@@ -15,6 +15,7 @@ namespace PhpGraphGroup\CypherQueryBuilder\Adapter\Partial;
 
 use Closure;
 use PhpGraphGroup\CypherQueryBuilder\Concerns\TranslatesObjectsToDsl;
+use PhpGraphGroup\CypherQueryBuilder\Contracts\Builder\WhereBuilder;
 use PhpGraphGroup\CypherQueryBuilder\Contracts\PartialGrammar;
 use PhpGraphGroup\CypherQueryBuilder\GrammarPipeline;
 use PhpGraphGroup\CypherQueryBuilder\QueryStructure;
@@ -35,6 +36,8 @@ use WikibaseSolutions\CypherDSL\Types\PropertyTypes\BooleanType;
 
 /**
  * @psalm-suppress InternalMethod
+ *
+ * @psalm-import-type Operator from WhereBuilder
  */
 class WhereGrammar implements PartialGrammar
 {
@@ -48,18 +51,18 @@ class WhereGrammar implements PartialGrammar
     ) {}
 
     /**
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function binaryBool(string $operator, RawExpression|Property $left, Parameter|Property $right): BooleanType
     {
         return match ($operator) {
-            '<' => $left->lt($right, false),
+            '<', => $left->lt($right, false),
             '<=' => $left->lte($right, false),
-            '=' => $left->equals($right, false),
+            '=', '==', '===' => $left->equals($right, false),
             '>' => $left->gt($right, false),
             '>=' => $left->gte($right, false),
-            '=~' => $left->regex($right, false),
-            '!=' => $left->notEquals($right, false),
+            '=~', 'LIKE' => $left->regex($right, false),
+            '!==', '!=', '<>' => $left->notEquals($right, false),
             'STARTS WITH' => $left->startsWith($right, false),
             'ENDS WITH' => $left->endsWith($right, false),
             'CONTAINS' => $left->contains($right, false),

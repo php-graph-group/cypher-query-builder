@@ -27,6 +27,8 @@ use PhpGraphGroup\CypherQueryBuilder\Where\Expressions\SubQueryExistsExpression;
 
 /**
  * @implements WhereBuilder
+ *
+ * @psalm-import-type Operator from WhereBuilder
  */
 trait FiltersGraphTraversal
 {
@@ -34,10 +36,13 @@ trait FiltersGraphTraversal
     use StringDecoder;
 
     /**
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function where(string $property, string $operator, mixed $value, BooleanOperator $chain = BooleanOperator::AND): static
     {
+        /** @var Operator */
+        $operator = strtoupper($operator);
+
         $property = $this->stringToProperty($property);
         $value = $this->structure->parameters->add($value);
 
@@ -47,7 +52,7 @@ trait FiltersGraphTraversal
     }
 
     /**
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function orWhere(string $property, string $operator, mixed $value): static
     {
@@ -55,7 +60,7 @@ trait FiltersGraphTraversal
     }
 
     /**
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function xorWhere(string $property, string $operator, mixed $value): static
     {
@@ -63,7 +68,7 @@ trait FiltersGraphTraversal
     }
 
     /**
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function andWhere(string $property, string $operator, mixed $value): static
     {
@@ -73,7 +78,7 @@ trait FiltersGraphTraversal
     /**
      * Create a boolean expression between two properties with the given operator.
      *
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'=~'|'IN' $operator
+     * @param Operator $operator
      */
     public function whereProperties(string $left, string $operator, string $right, BooleanOperator $chain = BooleanOperator::AND): static
     {
@@ -88,7 +93,7 @@ trait FiltersGraphTraversal
     /**
      * Create a boolean expression between two properties with the given operator.
      *
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'=~'|'IN' $operator
+     * @param Operator $operator
      */
     public function orWhereProperties(string $left, string $operator, string $right): static
     {
@@ -98,7 +103,7 @@ trait FiltersGraphTraversal
     /**
      * Create a boolean expression between two properties with the given operator.
      *
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'=~'|'IN' $operator
+     * @param Operator $operator
      */
     public function xorWhereProperties(string $left, string $operator, string $right): static
     {
@@ -108,7 +113,7 @@ trait FiltersGraphTraversal
     /**
      * Create a boolean expression between two properties with the given operator.
      *
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'=~'|'IN' $operator
+     * @param Operator $operator
      */
     public function andWhereProperties(string $left, string $operator, string $right): static
     {

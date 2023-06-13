@@ -15,61 +15,64 @@ namespace PhpGraphGroup\CypherQueryBuilder\Contracts\Builder;
 
 use PhpGraphGroup\CypherQueryBuilder\Where\BooleanOperator;
 
+/**
+ * @psalm-type Operator = '='|'==='|'=='|'!='|'<>'|'!=='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~'|'LIKE'
+ */
 interface WhereBuilder
 {
     /**
      * Create a boolean expression between a property and a value with the given operator.
      *
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function where(string $property, string $operator, mixed $value, BooleanOperator $chain = BooleanOperator::AND): static;
 
     /**
      * Create a boolean expression between a property and a value with the given operator.
      *
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS''|IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function orWhere(string $property, string $operator, mixed $value): static;
 
     /**
      * Create a boolean expression between a property and a value with the given operator.
      *
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function xorWhere(string $property, string $operator, mixed $value): static;
 
     /**
      * Create a boolean expression between a property and a value with the given operator.
      *
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function andWhere(string $property, string $operator, mixed $value): static;
 
     /**
      * Create a boolean expression between two properties with the given operator.
      *
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function whereProperties(string $left, string $operator, string $right, BooleanOperator $chain = BooleanOperator::AND): static;
 
     /**
      * Create a boolean expression between two properties with the given operator.
      *
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function orWhereProperties(string $left, string $operator, string $right): static;
 
     /**
      * Create a boolean expression between two properties with the given operator.
      *
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function xorWhereProperties(string $left, string $operator, string $right): static;
 
     /**
      * Create a boolean expression between two properties with the given operator.
      *
-     * @param '='|'!='|'<'|'<='|'>'|'>='|'STARTS WITH'|'ENDS WITH'|'CONTAINS'|'IN'|'=~' $operator
+     * @param Operator $operator
      */
     public function andWhereProperties(string $left, string $operator, string $right): static;
 
