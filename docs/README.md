@@ -26,6 +26,28 @@ WHERE a.name IN $names
 RETURN b.name AS name
 ```
 
+### Complex pattern match example
+
+This query contains a more complex pattern that is being built using the pattern builder.
+
+```php
+use PhpGraphGroup\CypherQueryBuilder\QueryBuilder;
+use PhpGraphGroup\CypherQueryBuilder\Builders\GraphPatternBuilder;
+
+$results = QueryBuilder::from(GraphPatternBuilder::from('node:MyNode')
+    ->addRelationship('<Parent')
+        ->addChildNode('sibling1:MyNode')->end()
+        ->addChildNode('sibling2:MyNode')->end()
+    ->end()
+    ->addRelationship('Parent>')
+        ->addChildNode('grandParent:MyNode')->end()
+    ->end()    
+)->whereIn('sibling1.name', ['Harry', 'Bart'])
+    ->andWhere('sibling2.name', '<>', 'Maria')
+    ->andWhere('grandParent.age', '>=', 70)
+    ->count('grandParent')
+```
+
 ### Simple Create example:
 
 Creates a new Person and makes it the colleague of Alice.
@@ -67,9 +89,9 @@ The builder has only one of each clause available, and the position of these cla
 
 ```text
 MATCH { match patterns }
-OPTIONAL MATCH { optional match patterns }
+OPTIONAL MATCH* { optional match patterns }
+CALL* { subquery }
 WHERE { where conditions }
-CALL { subquery }
 
 DELETE { deleted variables }
 DETACH DELETE { deleted variables }

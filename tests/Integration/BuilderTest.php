@@ -269,4 +269,18 @@ class BuilderTest extends TestCase
 
         $this->assertEqualCypher($expected, $cypher);
     }
+
+    public function testComplexEncoding(): void
+    {
+        $cypher = QueryBuilder::from('otherNode:`backtick')
+            ->returning('x', 'y')
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH (otherNode:```backtick`)
+        RETURN otherNode.x AS x, otherNode.y AS y
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
 }
