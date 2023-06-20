@@ -35,17 +35,17 @@ class BuilderTest extends TestCase
     {
         $cypher = QueryBuilder::fromNode('Origin')
             ->matchingNode('Origin', name: 'origin2')
-            ->whereIn('origin.name', ['one', 'two'])
+            ->whereIn('Origin.name', ['one', 'two'])
             ->whereIn('origin2.name', ['three', 'four'])
-            ->creatingConnection('origin', 'CONNECTION', 'origin2')
-            ->setting('connection.test', 'abc')
+            ->creatingConnection('Origin', 'conn:CONNECTION', 'origin2')
+            ->setting('conn.test', 'abc')
             ->toCypher();
 
         $expected = <<<'CYPHER'
-        MATCH (origin:Origin),(origin2:Origin)
-        WHERE origin.name IN $param0 AND origin2.name IN $param1
-        CREATE (origin)-[connection:CONNECTION]->(origin2)
-        SET connection.test = $param2
+        MATCH (Origin:Origin),(origin2:Origin)
+        WHERE Origin.name IN $param0 AND origin2.name IN $param1
+        CREATE (Origin)-[conn:CONNECTION]->(origin2)
+        SET conn.test = $param2
         CYPHER;
 
         $this->assertEqualCypher($expected, $cypher);
@@ -68,7 +68,7 @@ class BuilderTest extends TestCase
                     ->matchingNode('Y');
             })
             ->creatingNode('Hello', 'h')
-            ->creatingRelationship('x', 'HI_HA', 'h')
+            ->creatingRelationship('x', 'hiHa:HI_HA', 'h')
             ->batchCreating([
                 ['h.x' => '1', 'h.y' => '2', 'hiHa.a' => 'b'],
                 ['h.x' => '2', 'h.y' => '3', 'hiHa.a' => 'c'],
@@ -77,15 +77,15 @@ class BuilderTest extends TestCase
             ->toCypher();
 
         $expected = <<<'CYPHER'
-        MATCH (test:Test),(otherTest:OtherTest),(test)-[goesTo:GOES_TO]->(otherTest)
+        MATCH (Test:Test),(OtherTest:OtherTest),(test)-[GOES_TO:GOES_TO]->(otherTest)
         CALL {
             WITH *
-            MATCH (x:XO),(otherTest)-[hello:Hello]->(x)
+            MATCH (x:XO),(OtherTest)-[hello:Hello]->(x)
             WHERE x.addedSince <= $param0
             RETURN x.y, x.z
         }
         WHERE hello.z = $param1 AND EXISTS {
-            MATCH (y:Y),(x)-[haha:HAHA]->(y)
+            MATCH (Y:Y),(x)-[HAHA:HAHA]->(Y)
         }
         UNWIND $param2 AS toCreate
         CREATE (h:Hello {x: toCreate['h.x'], y: toCreate['h.y']}),(x)-[hiHa:HI_HA {a: toCreate['hiHa.a']}]->(h)
