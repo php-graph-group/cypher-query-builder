@@ -287,9 +287,14 @@ trait FiltersGraphTraversal
 
     public function whereNot(callable $builder, BooleanOperator $chain = BooleanOperator::AND): static
     {
-        $query = $builder($this->createSubQueryBuilder());
+        $sub = $this->createSubQueryBuilder();
 
-        $this->structure->wheres[] = new InnerWhereExpression($query, true, $chain);
+        $builder($sub);
+
+        $wheres = $sub->getStructure()->wheres;
+        if (count($wheres) > 0) {
+            $this->structure->wheres[] = new InnerWhereExpression($wheres, true, $chain);
+        }
 
         return $this;
     }
