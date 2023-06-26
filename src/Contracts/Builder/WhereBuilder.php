@@ -101,79 +101,79 @@ interface WhereBuilder
     /**
      * Creates an EXISTS expression for the given sub query.
      *
-     * @param callable(SubQueryBuilder) $builder
+     * @param callable(SubQueryBuilder)|SubQueryBuilder $builder
      */
-    public function whereExists(callable $builder, BooleanOperator $chain = BooleanOperator::AND): static;
+    public function whereExists(callable|SubQueryBuilder $builder, BooleanOperator $chain = BooleanOperator::AND): static;
 
-    public function orWhereExists(callable $builder): static;
+    public function orWhereExists(callable|SubQueryBuilder $builder): static;
 
-    public function xorWhereExists(callable $builder): static;
+    public function xorWhereExists(callable|SubQueryBuilder $builder): static;
 
-    public function andWhereExists(callable $builder): static;
+    public function andWhereExists(callable|SubQueryBuilder $builder): static;
 
     /**
-     * @param callable(WhereBuilder):void $builder
+     * @param callable(WhereBuilder):void|WhereBuilder $builder
      *
      * @return $this
      */
-    public function whereNot(callable $builder, BooleanOperator $chain = BooleanOperator::AND): static;
+    public function whereNot(callable|WhereBuilder $builder, BooleanOperator $chain = BooleanOperator::AND): static;
 
-    public function orWhereNot(callable $builder): static;
+    public function orWhereNot(callable|WhereBuilder $builder): static;
 
-    public function xorWhereNot(callable $builder): static;
+    public function xorWhereNot(callable|WhereBuilder $builder): static;
 
-    public function andWhereNot(callable $builder): static;
+    public function andWhereNot(callable|WhereBuilder $builder): static;
 
     /**
      * Creates a COUNT expression for the given sub query.
      *
-     * @param callable(SubQueryBuilder):void $builder
-     * @param '='|'!='|'<'|'<='|'>'|'>='     $operator
+     * @param callable(SubQueryBuilder):void|SubQueryBuilder $builder
+     * @param '='|'!='|'<'|'<='|'>'|'>='                     $operator
      *
      * @return $this
      */
-    public function whereCount(callable $builder, int $count, string $operator = '=', BooleanOperator $chain = BooleanOperator::AND): static;
+    public function whereCount(callable|SubQueryBuilder $builder, int $count, string $operator = '=', BooleanOperator $chain = BooleanOperator::AND): static;
 
     /**
      * Creates a COUNT expression for the given sub query.
      *
-     * @param callable(SubQueryBuilder):void $builder
-     * @param '='|'!='|'<'|'<='|'>'|'>='     $operator
+     * @param callable(SubQueryBuilder):void|SubQueryBuilder $builder
+     * @param '='|'!='|'<'|'<='|'>'|'>='                     $operator
      *
      * @return $this
      */
-    public function orWhereCount(callable $builder, int $count, string $operator = '='): static;
+    public function orWhereCount(callable|SubQueryBuilder $builder, int $count, string $operator = '='): static;
 
     /**
      * Creates a COUNT expression for the given sub query.
      *
-     * @param callable(SubQueryBuilder):void $builder
-     * @param '='|'!='|'<'|'<='|'>'|'>='     $operator
+     * @param callable(SubQueryBuilder):void|SubQueryBuilder $builder
+     * @param '='|'!='|'<'|'<='|'>'|'>='                     $operator
      *
      * @return $this
      */
-    public function xorWhereCount(callable $builder, int $count, string $operator = '='): static;
+    public function xorWhereCount(callable|SubQueryBuilder $builder, int $count, string $operator = '='): static;
 
     /**
      * Creates a COUNT expression for the given sub query.
      *
-     * @param callable(SubQueryBuilder):void $builder
-     * @param '='|'!='|'<'|'<='|'>'|'>='     $operator
+     * @param callable(SubQueryBuilder):void|SubQueryBuilder $builder
+     * @param '='|'!='|'<'|'<='|'>'|'>='                     $operator
      *
      * @return $this
      */
-    public function andWhereCount(callable $builder, int $count, string $operator = '='): static;
+    public function andWhereCount(callable|SubQueryBuilder $builder, int $count, string $operator = '='): static;
 
     /**
-     * @param callable(SubQueryBuilder):void $builder
+     * @param callable(SubQueryBuilder):void|SubQueryBuilder $builder
      */
-    public function whereNotExists(callable $builder, BooleanOperator $chain = BooleanOperator::AND): static;
+    public function whereNotExists(callable|SubQueryBuilder $builder, BooleanOperator $chain = BooleanOperator::AND): static;
 
-    public function orWhereNotExists(callable $builder): static;
+    public function orWhereNotExists(callable|SubQueryBuilder $builder): static;
 
-    public function xorWhereNotExists(callable $builder): static;
+    public function xorWhereNotExists(callable|SubQueryBuilder $builder): static;
 
-    public function andWhereNotExists(callable $builder): static;
+    public function andWhereNotExists(callable|SubQueryBuilder $builder): static;
 
     public function whereNull(string $property, BooleanOperator $chain = BooleanOperator::AND): static;
 
@@ -336,15 +336,15 @@ interface WhereBuilder
     public function andWherePropertiesGreaterThanOrEqual(string $left, string $right): static;
 
     /**
-     * @param callable(WhereBuilder):void $builder
+     * @param callable(WhereBuilder):void|WhereBuilder $builder
      */
-    public function whereInner(callable $builder, BooleanOperator $chain = BooleanOperator::AND): static;
+    public function whereInner(callable|WhereBuilder $builder, BooleanOperator $chain = BooleanOperator::AND): static;
 
-    public function orWhereInner(callable $builder): static;
+    public function orWhereInner(callable|WhereBuilder $builder): static;
 
-    public function xorWhereInner(callable $builder): static;
+    public function xorWhereInner(callable|WhereBuilder $builder): static;
 
-    public function andWhereInner(callable $builder): static;
+    public function andWhereInner(callable|WhereBuilder $builder): static;
 
     public function whereRaw(string $cypher, BooleanOperator $chainingOperator): static;
 

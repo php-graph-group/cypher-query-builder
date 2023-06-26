@@ -15,6 +15,7 @@ namespace PhpGraphGroup\CypherQueryBuilder\Concerns\Builder;
 
 use PhpGraphGroup\CypherQueryBuilder\Concerns\HasQueryStructure;
 use PhpGraphGroup\CypherQueryBuilder\Concerns\StringDecoder;
+use PhpGraphGroup\CypherQueryBuilder\Contracts\Builder\SubQueryBuilder;
 use PhpGraphGroup\CypherQueryBuilder\Contracts\Builder\WhereBuilder;
 use PhpGraphGroup\CypherQueryBuilder\Where\BooleanOperator;
 use PhpGraphGroup\CypherQueryBuilder\Where\Expressions\BinaryBooleanOperator;
@@ -193,54 +194,61 @@ trait FiltersGraphTraversal
         return $this->whereNotNull($property, BooleanOperator::XOR);
     }
 
-    public function whereExists(callable $builder, BooleanOperator $chain = BooleanOperator::AND): static
+    public function whereExists(callable|SubQueryBuilder $builder, BooleanOperator $chain = BooleanOperator::AND): static
     {
-        $query = $this->createSubQueryBuilder();
+        if (is_callable($builder)) {
+            $query = $this->createSubQueryBuilder();
 
-        $builder($query);
+            $builder($query);
+        } else {
+            $query = $builder;
+        }
 
         $this->structure->wheres[] = new SubQueryExistsExpression($query, false, $chain);
 
         return $this;
     }
 
-    public function orWhereExists(callable $builder): static
+    public function orWhereExists(callable|SubQueryBuilder $builder): static
     {
         return $this->whereExists($builder, BooleanOperator::OR);
     }
 
-    public function andWhereExists(callable $builder): static
+    public function andWhereExists(callable|SubQueryBuilder $builder): static
     {
         return $this->whereExists($builder, BooleanOperator::AND);
     }
 
-    public function xorWhereExists(callable $builder): static
+    public function xorWhereExists(callable|SubQueryBuilder $builder): static
     {
         return $this->whereExists($builder, BooleanOperator::XOR);
     }
 
-    public function whereNotExists(callable $builder, BooleanOperator $chain = BooleanOperator::AND): static
+    public function whereNotExists(callable|SubQueryBuilder $builder, BooleanOperator $chain = BooleanOperator::AND): static
     {
-        $query = $this->createSubQueryBuilder();
-
-        $builder($query);
+        if (is_callable($builder)) {
+            $query = $this->createSubQueryBuilder();
+            $builder($query);
+        } else {
+            $query = $builder;
+        }
 
         $this->structure->wheres[] = new SubQueryExistsExpression($query, true, $chain);
 
         return $this;
     }
 
-    public function orWhereNotExists(callable $builder): static
+    public function orWhereNotExists(callable|SubQueryBuilder $builder): static
     {
         return $this->whereNotExists($builder, BooleanOperator::OR);
     }
 
-    public function andWhereNotExists(callable $builder): static
+    public function andWhereNotExists(callable|SubQueryBuilder $builder): static
     {
         return $this->whereNotExists($builder, BooleanOperator::AND);
     }
 
-    public function xorWhereNotExists(callable $builder): static
+    public function xorWhereNotExists(callable|SubQueryBuilder $builder): static
     {
         return $this->whereNotExists($builder, BooleanOperator::XOR);
     }
@@ -285,26 +293,31 @@ trait FiltersGraphTraversal
         return $this->wherePropertiesEquals($left, $right, BooleanOperator::XOR);
     }
 
-    public function whereNot(callable $builder, BooleanOperator $chain = BooleanOperator::AND): static
+    public function whereNot(callable|WhereBuilder $builder, BooleanOperator $chain = BooleanOperator::AND): static
     {
-        $query = $builder($this->createSubQueryBuilder());
+        if (is_callable($builder)) {
+            $query = $this->createSubQueryBuilder();
+            $builder($query);
+        } else {
+            $query = $builder;
+        }
 
-        $this->structure->wheres[] = new InnerWhereExpression($query, true, $chain);
+        $this->structure->wheres[] = new InnerWhereExpression($query->getStructure()->wheres, true, $chain);
 
         return $this;
     }
 
-    public function orWhereNot(callable $builder): static
+    public function orWhereNot(callable|WhereBuilder $builder): static
     {
         return $this->whereNot($builder, BooleanOperator::OR);
     }
 
-    public function andWhereNot(callable $builder): static
+    public function andWhereNot(callable|WhereBuilder $builder): static
     {
         return $this->whereNot($builder, BooleanOperator::AND);
     }
 
-    public function xorWhereNot(callable $builder): static
+    public function xorWhereNot(callable|WhereBuilder $builder): static
     {
         return $this->whereNot($builder, BooleanOperator::XOR);
     }
@@ -314,10 +327,14 @@ trait FiltersGraphTraversal
      *
      * @return $this
      */
-    public function whereCount(callable $builder, int $count, string $operator = '=', BooleanOperator $chain = BooleanOperator::AND): static
+    public function whereCount(callable|SubQueryBuilder $builder, int $count, string $operator = '=', BooleanOperator $chain = BooleanOperator::AND): static
     {
-        $query = $this->createSubQueryBuilder();
-        $builder($query);
+        if (is_callable($builder)) {
+            $query = $this->createSubQueryBuilder();
+            $builder($query);
+        } else {
+            $query = $builder;
+        }
         $param = $this->structure->parameters->add($count);
 
         $this->structure->wheres[] = new SubQueryCountBooleanExpression($query, $operator, $param, $chain);
@@ -330,7 +347,7 @@ trait FiltersGraphTraversal
      *
      * @return $this
      */
-    public function orWhereCount(callable $builder, int $count, string $operator = '='): static
+    public function orWhereCount(callable|SubQueryBuilder $builder, int $count, string $operator = '='): static
     {
         return $this->whereCount($builder, $count, $operator, BooleanOperator::OR);
     }
@@ -340,7 +357,7 @@ trait FiltersGraphTraversal
      *
      * @return $this
      */
-    public function andWhereCount(callable $builder, int $count, string $operator = '='): static
+    public function andWhereCount(callable|SubQueryBuilder $builder, int $count, string $operator = '='): static
     {
         return $this->whereCount($builder, $count, $operator, BooleanOperator::AND);
     }
@@ -350,7 +367,7 @@ trait FiltersGraphTraversal
      *
      * @return $this
      */
-    public function xorWhereCount(callable $builder, int $count, string $operator = '='): static
+    public function xorWhereCount(callable|SubQueryBuilder $builder, int $count, string $operator = '='): static
     {
         return $this->whereCount($builder, $count, $operator, BooleanOperator::XOR);
     }
@@ -695,11 +712,14 @@ trait FiltersGraphTraversal
         return $this->wherePropertiesGreaterThanOrEqual($left, $right, BooleanOperator::XOR);
     }
 
-    public function whereInner(callable $builder, BooleanOperator $chain = BooleanOperator::AND): static
+    public function whereInner(callable|WhereBuilder $builder, BooleanOperator $chain = BooleanOperator::AND): static
     {
-        $wheres = $this->createSubQueryBuilder();
-
-        $builder($wheres);
+        if (is_callable($builder)) {
+            $wheres = $this->createSubQueryBuilder();
+            $builder($wheres);
+        } else {
+            $wheres = $builder;
+        }
 
         $structure = $wheres->getStructure();
         if (count($structure->wheres) > 0) {
@@ -709,17 +729,17 @@ trait FiltersGraphTraversal
         return $this;
     }
 
-    public function orWhereInner(callable $builder): static
+    public function orWhereInner(callable|WhereBuilder $builder): static
     {
         return $this->whereInner($builder, BooleanOperator::OR);
     }
 
-    public function andWhereInner(callable $builder): static
+    public function andWhereInner(callable|WhereBuilder $builder): static
     {
         return $this->whereInner($builder, BooleanOperator::AND);
     }
 
-    public function xorWhereInner(callable $builder): static
+    public function xorWhereInner(callable|WhereBuilder $builder): static
     {
         return $this->whereInner($builder, BooleanOperator::XOR);
     }
