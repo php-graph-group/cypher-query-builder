@@ -290,34 +290,13 @@ class GraphPattern
         $name = trim($decoded[1]);
         if ($name === '') {
             if ($first) {
-                $name = $target === 'node' ? $this->nameFromLabel($first) : $this->nameFromType($first);
+                $name = $first;
             } else {
                 $name = $this->anonymousName();
             }
         }
 
         return [$typeOrLabels, $name];
-    }
-
-    /**
-     * Generates a name from the provided label(s). The labels are assumed to be in PascalCase.
-     */
-    private function nameFromLabel(string $label): string
-    {
-        return lcfirst($label);
-    }
-
-    /**
-     * Generates a name based on the provided type(s). The types are assumed to be in SCREAMING_CASE.
-     */
-    private function nameFromType(string $type): string
-    {
-        $typenameParts = explode('_', $type);
-        $lowercaseParts = array_map(strtolower(...), $typenameParts);
-        $pascalCasedParts = array_map(ucfirst(...), $lowercaseParts);
-        $pascalCasedName = implode('', $pascalCasedParts);
-
-        return lcfirst($pascalCasedName);
     }
 
     /**
@@ -416,7 +395,7 @@ class GraphPattern
             [$name, $typeOrLabel] = explode(':', $typeOrLabels[0], 2);
             $typeOrLabels[0] = $typeOrLabel;
         } else {
-            $name = ($target === 'node') ? $this->nameFromLabel($typeOrLabels[0]) : $this->nameFromType($typeOrLabels[0]);
+            $name = $typeOrLabels[0];
         }
 
         return [$typeOrLabels, $name];

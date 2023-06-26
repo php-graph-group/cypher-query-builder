@@ -26,6 +26,50 @@ WHERE a.name IN $names
 RETURN b.name AS name
 ```
 
+### Complex pattern match example
+
+This query contains a more complex pattern that is being built using the pattern builder.
+
+```php
+use PhpGraphGroup\CypherQueryBuilder\QueryBuilder;
+use PhpGraphGroup\CypherQueryBuilder\Builders\GraphPatternBuilder;
+
+GraphPatternBuilder::from('node:MyNode') // MATCH (node:MyNode)
+GraphPatternBuilder::from('MyNode', 'otherNode') // MATCH (otherNode:MyNode)
+GraphPatternBuilder::from('myNode:MyNode', 'otherNode') // MATCH (otherNode:MyNode) (TODO: log warning here?)
+GraphPatternBuilder::from('Hello') // MATCH (hello:Hello)
+GraphPatternBuilder::from('<Hello') // MATCH () <-[hello:Hello]-()
+GraphPatternBuilder::from('<Hello')->addChildNode('Heya') // MATCH () <- [hello:Hello] - (heya:Heya)
+// TODO: maybe rename this to addNode to allow for a parallel node, aka joining.
+// TODO: If a node gets joined by a child node, it should have an anonymous relationship.
+GraphPatternBuilder::from('MyNode')->addChildNode('MyOtherNode') // MATCH (myNode:MyNode), (myOtherNode:MyOtherNode)
+GraphPatternBuilder::from('MyNode')->addRelationship()->addChildNode('MyOtherNode') // MATCH (myNode:MyNode)--(myOtherNode:MyOtherNode)
+GraphPatternBuilder::from(name: 'noLabel') // MATCH (noLabel)
+// TODO: Should it inject numbering in the automatic naming? -> no
+// TODO: Should we pre-emptively throw an error or let the syntax error be found by the database?
+// => first version should stay away from this, but we can revisit.
+GraphPatternBuilder::from('MyNode')->addRelationship()->addChildNode('MyNode') // MATCH (myNode:MyNode) - [] -> (myNode:MyNode)
+
+$results = QueryBuilder::from(GraphPatternBuilder::from('node:MyNode')
+    ->addRelationship('<Parent')
+        ->addChildNode('sibling1:MyNode')->end()
+        ->addChildNode('sibling2:MyNode')->end()
+    ->end()
+    ->addRelationship('Parent>')
+        ->addChildNode('grandParent:MyNode')->end()
+    ->end()    
+)->whereIn('sibling1.name', ['Harry', 'Bart'])
+    ->andWhere('sibling2.name', '<>', 'Maria')
+    ->andWhere('grandParent.age', '>=', 70)
+    ->count('grandParent')
+```
+
+Becomes:
+
+```Cypher
+MATCH (node:MyNode), (sibling1:MyNode)
+```
+
 ### Simple Create example:
 
 Creates a new Person and makes it the colleague of Alice.
@@ -67,9 +111,9 @@ The builder has only one of each clause available, and the position of these cla
 
 ```text
 MATCH { match patterns }
-OPTIONAL MATCH { optional match patterns }
+OPTIONAL MATCH* { optional match patterns }
+CALL* { subquery }
 WHERE { where conditions }
-CALL { subquery }
 
 DELETE { deleted variables }
 DETACH DELETE { deleted variables }

@@ -23,6 +23,7 @@ use PhpGraphGroup\CypherQueryBuilder\Common\PropertyNode;
 use PhpGraphGroup\CypherQueryBuilder\Common\PropertyRelationship;
 use PhpGraphGroup\CypherQueryBuilder\Common\RawExpression;
 use PhpGraphGroup\CypherQueryBuilder\Common\Variable;
+use PhpGraphGroup\CypherQueryBuilder\QueryStructure;
 use PhpGraphGroup\CypherQueryBuilder\Set\LabelAssignment;
 use PhpGraphGroup\CypherQueryBuilder\Set\PropertyAssignment;
 use WikibaseSolutions\CypherDSL\Expressions\Label;
@@ -60,7 +61,7 @@ trait TranslatesObjectsToDsl
         return $dsl;
     }
 
-    private function returnToDsl(Property|Variable|RawExpression|FunctionCall|Alias $return): \WikibaseSolutions\CypherDSL\Expressions\Property|\WikibaseSolutions\CypherDSL\Expressions\Variable|\WikibaseSolutions\CypherDSL\Expressions\RawExpression|\WikibaseSolutions\CypherDSL\Syntax\Alias
+    private function returnToDsl(QueryStructure $structure, Property|Variable|RawExpression|FunctionCall|Alias $return): \WikibaseSolutions\CypherDSL\Expressions\Property|\WikibaseSolutions\CypherDSL\Expressions\Variable|\WikibaseSolutions\CypherDSL\Expressions\RawExpression|\WikibaseSolutions\CypherDSL\Syntax\Alias
     {
         if ($return instanceof Property) {
             return Query::variable($return->variable->name)->property($return->name);
@@ -76,6 +77,9 @@ trait TranslatesObjectsToDsl
 
         if ($return instanceof FunctionCall) {
             $parts = [];
+            if (count($return->arguments) && $structure->distinct) {
+                $parts[] = Query::rawExpression('DISTINCT');
+            }
             foreach ($return->arguments as $argument) {
                 if ($argument instanceof RawExpression) {
                     $parts[] = Query::rawExpression($argument->cypher);
@@ -91,7 +95,7 @@ trait TranslatesObjectsToDsl
             return Query::rawExpression($cypher);
         }
 
-        $tbr = $this->returnToDsl($return->expression);
+        $tbr = $this->returnToDsl($structure, $return->expression);
         if ($tbr instanceof \WikibaseSolutions\CypherDSL\Syntax\Alias) {
             return $tbr;
         }

@@ -31,7 +31,7 @@ class ReturnGrammar implements PartialGrammar
     {
         $clause = new ReturnClause();
         foreach ($structure->return as $return) {
-            $clause->addColumn($this->returnToDsl($return));
+            $clause->addColumn($this->returnToDsl($structure, $return));
         }
 
         $clause->setDistinct($structure->distinct);
