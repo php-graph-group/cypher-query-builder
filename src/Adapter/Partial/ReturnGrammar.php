@@ -50,11 +50,12 @@ class ReturnGrammar implements PartialGrammar
                 }
             }
 
+            $subject = implode(',', $this->toSubjectParts($properties));
             if ($structure->orderByDirection === 'DESC') {
-                $clause .= ' DESC';
+                $subject .= ' DESC';
             }
 
-            yield new RawClause($clause, implode(',', $this->toSubjectParts($properties)));
+            yield new RawClause($clause, $subject);
         }
 
         if ($structure->skip) {
