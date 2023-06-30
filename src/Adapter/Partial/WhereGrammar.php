@@ -107,7 +107,11 @@ class WhereGrammar implements PartialGrammar
                     $insertParenthesis = false; // NOT expression already inserts parenthesis
                 }
 
-                $bools = $this->chain($bools, $inner, $where->chainingOperator, $insertParenthesis);
+                if ($insertParenthesis) {
+                    $inner = Query::rawExpression('('.$inner->toQuery().')');
+                }
+
+                $bools = $this->chain($bools, $inner, $where->chainingOperator, false);
             } elseif ($where instanceof BinaryBooleanOperator) {
                 $left = Query::variable($where->left->variable->name)->property($where->left->name);
                 $right = Query::parameter($where->right->name);
