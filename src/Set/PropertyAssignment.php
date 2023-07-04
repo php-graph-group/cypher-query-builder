@@ -16,6 +16,7 @@ namespace PhpGraphGroup\CypherQueryBuilder\Set;
 use PhpGraphGroup\CypherQueryBuilder\Common\MapValue;
 use PhpGraphGroup\CypherQueryBuilder\Common\Parameter;
 use PhpGraphGroup\CypherQueryBuilder\Common\Property;
+use PhpGraphGroup\CypherQueryBuilder\Common\RawExpression;
 
 /**
  * @template TValue = mixed
@@ -27,6 +28,6 @@ class PropertyAssignment
      */
     public function __construct(
         public readonly Property $property,
-        public readonly Parameter|MapValue $value
+        public readonly Parameter|MapValue|RawExpression $value
     ) {}
 }

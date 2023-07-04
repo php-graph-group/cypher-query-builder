@@ -50,9 +50,13 @@ trait TranslatesObjectsToDsl
         if (count($value->properties)) {
             $properties = [];
             foreach ($value->properties as $assignment) {
-                $properties[$assignment->property->name] = $assignment->value instanceof Parameter ?
-                    Query::parameter($assignment->value->name) :
-                    $this->mapValueToAssignmentValue($assignment->value);
+                if ($assignment->value instanceof Parameter) {
+                    $properties[$assignment->property->name] = Query::parameter($assignment->value->name);
+                } elseif ($assignment->value instanceof RawExpression) {
+                    $properties[$assignment->property->name] = Query::rawExpression($assignment->value->cypher);
+                } else {
+                    $properties[$assignment->property->name] = $this->mapValueToAssignmentValue($assignment->value);
+                }
             }
 
             $dsl->withProperties($properties);

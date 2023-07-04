@@ -352,4 +352,16 @@ class BuilderTest extends TestCase
 
         $this->assertEqualCypher($expected, $cypher);
     }
+
+    public function testAnonChildInRelation(): void
+    {
+        $cypher = QueryBuilder::from(GraphPatternBuilder::from('a:A')->addRelationship('rel:REL')->end())
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH (a:A),(a)-[rel:REL]->(anon0)
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
 }
