@@ -283,4 +283,35 @@ class BuilderTest extends TestCase
 
         $this->assertEqualCypher($expected, $cypher);
     }
+
+    public function testEmptyCreate(): void
+    {
+        $cypher = QueryBuilder::from('n:Node')
+            ->matchingNode('o:OtherNode')
+            ->creating([])
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH (o:OtherNode)
+        CREATE (n:Node)
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
+
+    public function testEmptyCreateMany(): void
+    {
+        $cypher = QueryBuilder::from('n:Node')
+            ->matchingNode('o:OtherNode')
+            ->batchCreating([[],[]])
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH (o:OtherNode)
+        UNWIND $param0 AS toCreate
+        CREATE (n:Node)
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
 }
