@@ -24,8 +24,19 @@ class ParameterStack implements IteratorAggregate
     /** @var array<string, Parameter> */
     private array $parameters = [];
 
-    public function add(mixed $value, string $paramNameOverride = null): Parameter
+    /**
+     * @template Value
+     *
+     * @param Value $value
+     *
+     * @return (Value is RawExpression ? RawExpression : Parameter)
+     */
+    public function add(mixed $value, string $paramNameOverride = null): Parameter|RawExpression
     {
+        if ($value instanceof RawExpression) {
+            return $value;
+        }
+
         $param = new Parameter($paramNameOverride ?? 'param'.count($this->parameters), $value);
 
         $this->parameters[$param->name] = $param;

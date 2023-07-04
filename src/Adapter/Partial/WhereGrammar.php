@@ -53,7 +53,7 @@ class WhereGrammar implements PartialGrammar
     /**
      * @param Operator $operator
      */
-    public function binaryBool(string $operator, RawExpression|Property $left, Parameter|Property $right): BooleanType
+    public function binaryBool(string $operator, RawExpression|Property $left, Parameter|Property|RawExpression $right): BooleanType
     {
         return match ($operator) {
             '<', => $left->lt($right, false),
@@ -114,7 +114,11 @@ class WhereGrammar implements PartialGrammar
                 $bools = $this->chain($bools, $inner, $where->chainingOperator, false);
             } elseif ($where instanceof BinaryBooleanOperator) {
                 $left = Query::variable($where->left->variable->name)->property($where->left->name);
-                $right = Query::parameter($where->right->name);
+                if ($where->right instanceof \PhpGraphGroup\CypherQueryBuilder\Common\RawExpression) {
+                    $right = new RawExpression($where->right->cypher);
+                } else {
+                    $right = Query::parameter($where->right->name);
+                }
 
                 $bool = $this->binaryBool($where->operator, $left, $right);
                 $bools = $this->chain($bools, $bool, $where->chainingOperator, false);

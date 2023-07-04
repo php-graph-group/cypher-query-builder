@@ -15,6 +15,7 @@ namespace PhpGraphGroup\CypherQueryBuilder\Where\Expressions;
 
 use PhpGraphGroup\CypherQueryBuilder\Common\Parameter;
 use PhpGraphGroup\CypherQueryBuilder\Common\Property;
+use PhpGraphGroup\CypherQueryBuilder\Common\RawExpression;
 use PhpGraphGroup\CypherQueryBuilder\Contracts\Builder\WhereBuilder;
 use PhpGraphGroup\CypherQueryBuilder\Where\BooleanOperator;
 
@@ -29,7 +30,7 @@ class BinaryBooleanOperator
     public function __construct(
         public readonly Property $left,
         public readonly string $operator,
-        public readonly Parameter $right,
+        public readonly Parameter|RawExpression $right,
         public readonly BooleanOperator $chainingOperator
     ) {}
 }

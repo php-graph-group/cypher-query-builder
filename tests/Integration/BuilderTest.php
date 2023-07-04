@@ -16,6 +16,7 @@ namespace Integration;
 use DateTime;
 use PhpGraphGroup\CypherQueryBuilder\Builders\GraphPatternBuilder;
 use PhpGraphGroup\CypherQueryBuilder\Common\Direction;
+use PhpGraphGroup\CypherQueryBuilder\Common\RawExpression;
 use PhpGraphGroup\CypherQueryBuilder\Contracts\Builder;
 use PhpGraphGroup\CypherQueryBuilder\QueryBuilder;
 use PHPUnit\Framework\TestCase;
@@ -333,6 +334,20 @@ class BuilderTest extends TestCase
         MATCH (p:Parent),(r:Related)
         WHERE p.id = $param0 AND r.id = $param1
         CREATE (p)-[c:CONNECTION]->(r)
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
+
+    public function testRawExpressionInWhere(): void
+    {
+        $cypher = QueryBuilder::from('a:A')
+            ->where('a.a', '=', new RawExpression('abracadabra'))
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH (a:A)
+        WHERE a.a = abracadabra
         CYPHER;
 
         $this->assertEqualCypher($expected, $cypher);
