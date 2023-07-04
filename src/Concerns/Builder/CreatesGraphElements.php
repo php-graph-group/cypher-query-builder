@@ -75,6 +75,10 @@ trait CreatesGraphElements
             $pattern->set($property->variable->name, [new PropertyAssignment($property, $param)], 'create');
         }
 
+        if (count($values) === 0) {
+            $pattern->set($this->structure->entry->name, [], 'create');
+        }
+
         return $this;
     }
 
@@ -91,6 +95,11 @@ trait CreatesGraphElements
         $this->structure->batchCreate = $this->structure->parameters->add($rows);
 
         $values = $rows[0];
+
+        if (count($values) === 0) {
+            $pattern->set($this->structure->entry->name, [], 'create');
+        }
+
         /** @var string $key */
         foreach (array_keys($values) as $key) {
             $property = $this->stringToProperty($key);
