@@ -63,10 +63,16 @@ trait CreatesGraphElements
         return $this;
     }
 
-    public function creating(array $values = []): static
+    public function creating(array|string $values = []): static
     {
         $pattern = $this->structure->graphPattern;
         $this->structure->batchCreate = null;
+
+        if (is_string($values)) {
+            $pattern->set($values, [], 'create');
+
+            return $this;
+        }
 
         foreach ($values as $key => $value) {
             $property = $this->stringToProperty($key);

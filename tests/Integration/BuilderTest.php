@@ -314,4 +314,27 @@ class BuilderTest extends TestCase
 
         $this->assertEqualCypher($expected, $cypher);
     }
+
+    public function testFlagCreating(): void
+    {
+        $pattern = GraphPatternBuilder::from('p:Parent')
+            ->addRelationship('c:CONNECTION>')
+                ->addChildNode('r:Related')
+            ->end()
+        ->end();
+
+        $cypher = QueryBuilder::from($pattern)
+            ->creating('c')
+            ->where('p.id', '=', 'abc')
+            ->where('r.id', '=', 'efg')
+            ->toCypher();
+
+        $expected = <<<'CYPHER'
+        MATCH (p:Parent),(r:Related)
+        WHERE p.id = $param0 AND r.id = $param1
+        CREATE (p)-[c:CONNECTION]->(r)
+        CYPHER;
+
+        $this->assertEqualCypher($expected, $cypher);
+    }
 }

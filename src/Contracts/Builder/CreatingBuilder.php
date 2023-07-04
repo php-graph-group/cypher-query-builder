@@ -72,7 +72,7 @@ interface CreatingBuilder
      *
      * @return $this
      */
-    public function creating(array $values = []): static;
+    public function creating(array|string $values = []): static;
 
     /**
      * Batch creates the patterns with the given values.
