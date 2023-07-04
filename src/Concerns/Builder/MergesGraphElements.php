@@ -30,7 +30,7 @@ trait MergesGraphElements
     /**
      * @param string|non-empty-list<string> $label
      */
-    public function mergingNode(string|array $label, string|null $name = null): static
+    public function mergingNode(string|array $label, string $name = null): static
     {
         $this->structure->graphPattern->addMergingNode($label, $name, []);
 
@@ -40,7 +40,7 @@ trait MergesGraphElements
     /**
      * @param non-empty-list<string>|string $types
      */
-    public function mergingConnection(string $from, string|array $types, string $end, string|null $name = null): static
+    public function mergingConnection(string $from, string|array $types, string $end, string $name = null): static
     {
         $this->structure->graphPattern->addMergingRelationship($from, $end, $types, $name, [], Direction::LEFT_TO_RIGHT);
 

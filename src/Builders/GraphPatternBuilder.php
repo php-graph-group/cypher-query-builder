@@ -23,7 +23,7 @@ class GraphPatternBuilder
     /**
      * @param list<string>|string|null $labelOrType
      */
-    public static function from(array|string|null $labelOrType = null, string|null $name = null, bool $optional = false): PatternBuilder
+    public static function from(array|string $labelOrType = null, string $name = null, bool $optional = false): PatternBuilder
     {
         $firstLabelOrType = (is_array($labelOrType) ? ($labelOrType[0] ?? null) : $labelOrType) ?? '';
         if (str_starts_with($firstLabelOrType, '<') || str_ends_with($firstLabelOrType, '>')) {
@@ -36,7 +36,7 @@ class GraphPatternBuilder
     /**
      * @param list<string>|string|null $label
      */
-    public static function fromNode(array|string|null $label = null, string|null $name = null, bool $optional = false): PatternBuilder
+    public static function fromNode(array|string $label = null, string $name = null, bool $optional = false): PatternBuilder
     {
         $pattern = new GraphPattern();
 
@@ -48,7 +48,7 @@ class GraphPatternBuilder
     /**
      * @param list<string>|string|null $type
      */
-    public static function fromRelationship(array|string|null $type = null, string|null $name = null, Direction|null $direction = null, bool $optional = false): PatternBuilder
+    public static function fromRelationship(array|string $type = null, string $name = null, Direction $direction = null, bool $optional = false): PatternBuilder
     {
         /** @var NodePatternBuilder */
         $parent = self::fromNode(optional: $optional);

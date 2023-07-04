@@ -43,7 +43,7 @@ trait Builder
     /**
      * @param PatternBuilder|list<string>|string|null $labelOrType
      */
-    public static function from(PatternBuilder|array|string|null $labelOrType = null, string|null $name = null, bool $optional = false): self
+    public static function from(PatternBuilder|array|string $labelOrType = null, string $name = null, bool $optional = false): self
     {
         if ($labelOrType instanceof PatternBuilder) {
             return self::fromPatternBuilder($labelOrType);
@@ -60,7 +60,7 @@ trait Builder
     /**
      * @param list<string>|string|null $type
      */
-    public static function fromRelationship(array|string|null $type = null, string|null $name = null, Direction|null $direction = null, bool $optional = false): self
+    public static function fromRelationship(array|string $type = null, string $name = null, Direction $direction = null, bool $optional = false): self
     {
         $matches = new GraphPattern();
         $relationship = $matches->addMatchingRelationship(null, null, $type, $name, $direction, $optional);
@@ -77,7 +77,7 @@ trait Builder
     /**
      * @param list<string>|string|null $label
      */
-    public static function fromNode(array|string $label = null, string|null $name = null, bool $optional = false): self
+    public static function fromNode(array|string $label = null, string $name = null, bool $optional = false): self
     {
         $matches = new GraphPattern();
         $relationship = $matches->addMatchingNode($label, $name, $optional);

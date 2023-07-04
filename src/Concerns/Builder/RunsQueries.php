@@ -51,7 +51,7 @@ trait RunsQueries
     use DeletesGraphElements;
     use MergesGraphElements;
 
-    public function count(string|RawExpression|null $property = null, bool $distinct = false): int
+    public function count(string|RawExpression $property = null, bool $distinct = false): int
     {
         if ($property === null) {
             $property = new RawExpression('*');
@@ -221,19 +221,19 @@ trait RunsQueries
         return $this->run($query, $this->structure->parameters)->getSummary();
     }
 
-    public function execute(GrammarPipeline|null $pipeline = null): SummarizedResult
+    public function execute(GrammarPipeline $pipeline = null): SummarizedResult
     {
         $query = $this->toCypher($pipeline);
 
         return $this->run($query, $this->structure->parameters);
     }
 
-    public function toCypher(GrammarPipeline|null $pipeline = null): string
+    public function toCypher(GrammarPipeline $pipeline = null): string
     {
         return $this->toDsl($pipeline)->toQuery();
     }
 
-    public function toDsl(GrammarPipeline|null $pipeline = null): Query
+    public function toDsl(GrammarPipeline $pipeline = null): Query
     {
         return $this->adapter->fullQuery($this->structure);
     }

@@ -20,14 +20,14 @@ interface MergingBuilder
      *
      * @param non-empty-list<string>|string $label
      */
-    public function mergingNode(string|array $label, string|null $name = null): static;
+    public function mergingNode(string|array $label, string $name = null): static;
 
     /**
      * Connects two nodes with a relationship.
      *
      * @param non-empty-list<string>|string $types
      */
-    public function mergingConnection(string $from, string|array $types, string $end, string|null $name = null): static;
+    public function mergingConnection(string $from, string|array $types, string $end, string $name = null): static;
 
     /**
      * Adds a raw match expression.

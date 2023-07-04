@@ -304,7 +304,7 @@ class BuilderTest extends TestCase
     {
         $cypher = QueryBuilder::from('n:Node')
             ->matchingNode('o:OtherNode')
-            ->batchCreating([[],[]])
+            ->batchCreating([[], []])
             ->toCypher();
 
         $expected = <<<'CYPHER'

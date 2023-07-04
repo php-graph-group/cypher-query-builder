@@ -31,7 +31,7 @@ trait CreatesGraphElements
     /**
      * @param non-empty-list<string>|string $label
      */
-    public function creatingNode(string|array $label, string|null $name = null): static
+    public function creatingNode(string|array $label, string $name = null): static
     {
         $this->structure->graphPattern->addCreatingNode($label, $name, []);
 
@@ -41,7 +41,7 @@ trait CreatesGraphElements
     /**
      * @param non-empty-list<string>|string $types
      */
-    public function creatingConnection(string $from, string|array $types, string $end, string|null $name = null): static
+    public function creatingConnection(string $from, string|array $types, string $end, string $name = null): static
     {
         $this->structure->graphPattern->addCreatingRelationship($from, $end, $types, $name, [], null);
 
@@ -51,7 +51,7 @@ trait CreatesGraphElements
     /**
      * @param non-empty-list<string>|string $types
      */
-    public function creatingRelationship(string $from, string|array $types, string $end, string|null $name = null): static
+    public function creatingRelationship(string $from, string|array $types, string $end, string $name = null): static
     {
         return $this->creatingConnection($from, $types, $end, $name);
     }

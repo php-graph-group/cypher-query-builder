@@ -34,19 +34,19 @@ interface HasStaticClient
      *
      * @param string|null $connection The connection to begin a transaction over. Null means the default connection.
      */
-    public static function beginTransaction(string|null $connection = null): void;
+    public static function beginTransaction(string $connection = null): void;
 
     /**
      * Commit a transaction over this connection.
      *
      * @param string|null $connection The connection to commit a transaction over. Null means the default connection.
      */
-    public static function commitTransaction(string|null $connection = null): void;
+    public static function commitTransaction(string $connection = null): void;
 
     /**
      * Rollback a transaction over this connection.
      *
      * @param string|null $connection The connection to roll back a transaction over. Null means the default connection.
      */
-    public static function rollbackTransaction(string|null $connection = null): void;
+    public static function rollbackTransaction(string $connection = null): void;
 }

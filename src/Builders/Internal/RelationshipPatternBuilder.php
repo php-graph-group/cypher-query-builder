@@ -36,7 +36,7 @@ class RelationshipPatternBuilder extends BaseBuilder
         parent::__construct($pattern, $parent, $optional);
     }
 
-    public function addRelationship(array|string|null $type, string $name = null, Direction|null $direction = null, bool $optional = false): RelationshipPatternBuilder
+    public function addRelationship(array|string|null $type, string $name = null, Direction $direction = null, bool $optional = false): RelationshipPatternBuilder
     {
         $optional = $this->optional || $optional;
 

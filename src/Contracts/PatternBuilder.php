@@ -21,12 +21,12 @@ interface PatternBuilder
     /**
      * @param list<string>|string|null $label
      */
-    public function addChildNode(array|string|null $label = null, string|null $name = null, bool $optional = false): PatternBuilder;
+    public function addChildNode(array|string $label = null, string $name = null, bool $optional = false): PatternBuilder;
 
     /**
      * @param list<string>|string|null $type
      */
-    public function addRelationship(array|string|null $type, string|null $name = null, Direction|null $direction = null, bool $optional = false): PatternBuilder;
+    public function addRelationship(array|string|null $type, string $name = null, Direction $direction = null, bool $optional = false): PatternBuilder;
 
     public function end(): PatternBuilder;
 

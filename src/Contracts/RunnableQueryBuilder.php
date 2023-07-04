@@ -39,7 +39,7 @@ interface RunnableQueryBuilder
      *
      * @see https://neo4j.com/docs/cypher-manual/current/functions/aggregating/
      */
-    public function count(string|RawExpression|null $property = null, bool $distinct = false): int;
+    public function count(string|RawExpression $property = null, bool $distinct = false): int;
 
     /**
      * @see https://neo4j.com/docs/cypher-manual/current/functions/aggregating/#functions-avg
@@ -94,11 +94,11 @@ interface RunnableQueryBuilder
 
     public function merge(array $values = []): ResultSummary;
 
-    public function execute(GrammarPipeline|null $pipeline = null): SummarizedResult;
+    public function execute(GrammarPipeline $pipeline = null): SummarizedResult;
 
-    public function toCypher(GrammarPipeline|null $pipeline = null): string;
+    public function toCypher(GrammarPipeline $pipeline = null): string;
 
-    public function toDsl(GrammarPipeline|null $pipeline = null): Query;
+    public function toDsl(GrammarPipeline $pipeline = null): Query;
 
     public function first(): CypherMap;
 

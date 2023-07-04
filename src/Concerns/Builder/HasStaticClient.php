@@ -33,7 +33,7 @@ trait HasStaticClient
         return $this;
     }
 
-    public static function beginTransaction(string|null $connection = null): void
+    public static function beginTransaction(string $connection = null): void
     {
         self::getClient()->bindTransaction($connection);
     }
@@ -55,12 +55,12 @@ trait HasStaticClient
         self::$client = $client;
     }
 
-    public static function commitTransaction(string|null $connection = null, int $depth = 1): void
+    public static function commitTransaction(string $connection = null, int $depth = 1): void
     {
         self::getClient()->commitBoundTransaction($connection);
     }
 
-    public static function rollbackTransaction(string|null $connection = null, int $depth = 1): void
+    public static function rollbackTransaction(string $connection = null, int $depth = 1): void
     {
         self::getClient()->commitBoundTransaction($connection, $depth);
     }

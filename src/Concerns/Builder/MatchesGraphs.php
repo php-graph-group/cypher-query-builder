@@ -29,7 +29,7 @@ trait MatchesGraphs
      *
      * @return $this
      */
-    public function matchingNode(string|array|null $label = null, string|null $name = null, bool $optional = false): static
+    public function matchingNode(string|array $label = null, string $name = null, bool $optional = false): static
     {
         $this->structure->graphPattern->addMatchingNode($label, $name, $optional);
 
@@ -49,10 +49,10 @@ trait MatchesGraphs
      * @return $this
      */
     public function matchingRelationship(
-        string|null $from = null,
-        string|array|null $type = null,
-        string|null $end = null,
-        string|null $name = null,
+        string $from = null,
+        string|array $type = null,
+        string $end = null,
+        string $name = null,
         Direction $direction = Direction::LEFT_TO_RIGHT,
         bool $optional = false
     ): static {

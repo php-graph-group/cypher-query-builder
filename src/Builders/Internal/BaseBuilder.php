@@ -38,7 +38,7 @@ abstract class BaseBuilder implements PatternBuilder
     /**
      * @param list<string>|string|null $label
      */
-    public function addChildNode(array|string|null $label = null, string|null $name = null, bool $optional = false): NodePatternBuilder
+    public function addChildNode(array|string $label = null, string $name = null, bool $optional = false): NodePatternBuilder
     {
         $optional = $this->optional || $optional;
         $node = $this->pattern->addMatchingNode($label, $name, $optional);

@@ -31,7 +31,7 @@ interface CreatingBuilder
      * @see ../../../README.md#variable-usage
      * @see https://neo4j.com/docs/cypher-manual/current/clauses/create/#create-create-a-node-with-a-label
      */
-    public function creatingNode(string|array $label, string|null $name = null): static;
+    public function creatingNode(string|array $label, string $name = null): static;
 
     /**
      * Connects two nodes with a relationship.
@@ -46,12 +46,12 @@ interface CreatingBuilder
      * @see ../../../README.md#variable-usage
      * @see https://neo4j.com/docs/cypher-manual/current/clauses/create/#create-relationships
      */
-    public function creatingConnection(string $from, string|array $types, string $end, string|null $name = null): static;
+    public function creatingConnection(string $from, string|array $types, string $end, string $name = null): static;
 
     /**
      * @param non-empty-list<string>|string $types
      */
-    public function creatingRelationship(string $from, string|array $types, string $end, string|null $name = null): static;
+    public function creatingRelationship(string $from, string|array $types, string $end, string $name = null): static;
 
     /**
      * Adds a raw match expression. The expression will just be comma-separated and inserted into the CREATE clause.

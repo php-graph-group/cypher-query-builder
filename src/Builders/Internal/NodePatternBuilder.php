@@ -32,7 +32,7 @@ class NodePatternBuilder extends BaseBuilder
         parent::__construct($pattern, $parent, $optional);
     }
 
-    public function addRelationship(array|string|null $type, string $name = null, Direction|null $direction = null, bool $optional = false): PatternBuilder
+    public function addRelationship(array|string|null $type, string $name = null, Direction $direction = null, bool $optional = false): PatternBuilder
     {
         $child = new RelationshipPatternBuilder($this->pattern, $this, $name, $direction, $type, $optional);
 

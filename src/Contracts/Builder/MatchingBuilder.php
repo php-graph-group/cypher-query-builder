@@ -24,7 +24,7 @@ interface MatchingBuilder
      * @param string|null              $name     The name of the node. The name overrides the name that may be given in the label. If no name is given in both the name and label, the name will be generated from the label by bringing it to lower case (eg. label User -> name user)
      * @param bool                     $optional If the node is optional
      */
-    public function matchingNode(string|array|null $label = null, string|null $name = null, bool $optional = false): static;
+    public function matchingNode(string|array $label = null, string $name = null, bool $optional = false): static;
 
     /**
      * Adds a raw match expression.
@@ -36,5 +36,5 @@ interface MatchingBuilder
      *
      * @param string|list<string>|null $type
      */
-    public function matchingRelationship(string|null $from = null, string|array|null $type = null, string|null $end = null, string|null $name = null, Direction $direction = Direction::LEFT_TO_RIGHT, bool $optional = false): static;
+    public function matchingRelationship(string $from = null, string|array $type = null, string $end = null, string $name = null, Direction $direction = Direction::LEFT_TO_RIGHT, bool $optional = false): static;
 }
